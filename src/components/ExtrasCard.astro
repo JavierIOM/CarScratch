@@ -1,0 +1,108 @@
+---
+import type { ScrapedExtras } from '../lib/types';
+
+interface Props {
+  extras: ScrapedExtras;
+}
+
+const { extras } = Astro.props;
+
+// Check if we have any meaningful data to show
+const hasPerformance = extras.bhp || extras.topSpeed || extras.zeroToSixty;
+const hasCompliance = extras.ulezCompliant !== undefined || extras.cazCompliant !== undefined || extras.insuranceGroup;
+const hasMarket = extras.previousPrice || extras.previousMileage;
+const hasAnyData = hasPerformance || hasCompliance || hasMarket || extras.bodyStyle || extras.registrationLocation;
+---
+
+{hasAnyData && (
+  <div class="bg-slate-800/50 border border-slate-700">
+    <div class="p-6 border-b border-slate-700">
+      <h3 class="text-lg font-semibold">Additional Information</h3>
+      {extras.sources && extras.sources.length > 0 && (
+        <p class="text-sm text-slate-500 mt-1">
+          Data from {extras.sources.join(', ')}
+        </p>
+      )}
+    </div>
+
+    <div class="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {/* Performance section */}
+      {extras.bhp && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Power</dt>
+          <dd class="font-medium">{extras.bhp} BHP</dd>
+        </div>
+      )}
+
+      {extras.topSpeed && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Top Speed</dt>
+          <dd class="font-medium">{extras.topSpeed}</dd>
+        </div>
+      )}
+
+      {extras.zeroToSixty && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">0-60 MPH</dt>
+          <dd class="font-medium">{extras.zeroToSixty}</dd>
+        </div>
+      )}
+
+      {/* Body & location */}
+      {extras.bodyStyle && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Body Style</dt>
+          <dd class="font-medium capitalize">{extras.bodyStyle.toLowerCase()}</dd>
+        </div>
+      )}
+
+      {extras.registrationLocation && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Registered In</dt>
+          <dd class="font-medium">{extras.registrationLocation}</dd>
+        </div>
+      )}
+
+      {/* Insurance & Compliance */}
+      {extras.insuranceGroup && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Insurance Group</dt>
+          <dd class="font-medium">{extras.insuranceGroup}</dd>
+        </div>
+      )}
+
+      {extras.ulezCompliant !== undefined && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">ULEZ Compliant</dt>
+          <dd class={`font-medium ${extras.ulezCompliant ? 'text-green-400' : 'text-red-400'}`}>
+            {extras.ulezCompliant ? 'Yes' : 'No'}
+          </dd>
+        </div>
+      )}
+
+      {extras.cazCompliant !== undefined && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">CAZ Compliant</dt>
+          <dd class={`font-medium ${extras.cazCompliant ? 'text-green-400' : 'text-red-400'}`}>
+            {extras.cazCompliant ? 'Yes' : 'No'}
+          </dd>
+        </div>
+      )}
+
+      {/* Market data */}
+      {extras.previousPrice && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Previously Advertised</dt>
+          <dd class="font-medium text-amber-400">{extras.previousPrice}</dd>
+        </div>
+      )}
+
+      {extras.previousMileage && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Advertised Mileage</dt>
+          <dd class="font-medium">{extras.previousMileage} miles</dd>
+        </div>
+      )}
+    </div>
+  </div>
+)}

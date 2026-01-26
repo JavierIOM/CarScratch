@@ -47,10 +47,35 @@ export interface MOTHistory {
   motTests: MOTTest[];
 }
 
+// Scraped extra data from third-party sites
+export interface ScrapedExtras {
+  // Performance
+  bhp?: number;
+  topSpeed?: string;
+  zeroToSixty?: string;
+
+  // Insurance & compliance
+  insuranceGroup?: string;
+  ulezCompliant?: boolean;
+  cazCompliant?: boolean;
+
+  // Market data
+  previousPrice?: string;
+  previousMileage?: string;
+
+  // Additional details
+  bodyStyle?: string;
+  registrationLocation?: string;
+
+  // Source tracking
+  sources?: string[];
+}
+
 // Combined vehicle info from all sources
 export interface VehicleInfo {
   registration: string;
   vehicle?: VehicleData;
   motHistory?: MOTHistory;
+  extras?: ScrapedExtras;
   error?: string;
 }

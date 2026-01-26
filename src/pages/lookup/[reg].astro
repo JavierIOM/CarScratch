@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import SearchForm from '../../components/SearchForm.astro';
 import VehicleCard from '../../components/VehicleCard.astro';
+import ExtrasCard from '../../components/ExtrasCard.astro';
 import MOTHistory from '../../components/MOTHistory.astro';
 import MileageChart from '../../components/MileageChart.astro';
 import { getVehicleInfo } from '../../lib/aggregator';
@@ -55,6 +56,10 @@ const formatReg = (r: string) => {
       <div class="space-y-6">
         {vehicleInfo.vehicle && (
           <VehicleCard vehicle={vehicleInfo.vehicle} />
+        )}
+
+        {vehicleInfo.extras && (
+          <ExtrasCard extras={vehicleInfo.extras} />
         )}
 
         {vehicleInfo.motHistory && vehicleInfo.motHistory.motTests.length > 1 && (

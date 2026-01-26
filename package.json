@@ -12,7 +12,13 @@
     "type": "git",
     "url": "git+https://github.com/JavierIOM/CarScratch.git"
   },
-  "keywords": ["car", "vehicle", "uk", "dvla", "mot"],
+  "keywords": [
+    "car",
+    "vehicle",
+    "uk",
+    "dvla",
+    "mot"
+  ],
   "author": "JavierIOM",
   "license": "ISC",
   "bugs": {
@@ -21,7 +27,8 @@
   "homepage": "https://github.com/JavierIOM/CarScratch#readme",
   "dependencies": {
     "@astrojs/netlify": "^6.6.4",
-    "astro": "^5.16.15"
+    "astro": "^5.16.15",
+    "cheerio": "^1.2.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.0",
