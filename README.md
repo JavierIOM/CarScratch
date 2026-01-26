@@ -38,12 +38,40 @@ CarScratch is a web application that aggregates vehicle information from multipl
 
 ## Data Sources
 
-| Source | Data Provided |
-|--------|--------------|
-| TotalCarCheck | Vehicle specs, performance, insurance group, ULEZ/CAZ, market data |
-| gov.im | Isle of Man vehicle registration data |
-| DVLA API (planned) | Official UK vehicle data |
-| MOT History API (planned) | Official MOT test history |
+| Source | Data Provided | Status |
+|--------|--------------|--------|
+| TotalCarCheck | Vehicle specs, performance, insurance group, ULEZ/CAZ, market data | Active (scraping) |
+| gov.im | Isle of Man vehicle registration data | Active (via Browserless) |
+| DVLA Vehicle Enquiry API | Official UK vehicle data | Planned |
+| MOT History API | Official MOT test history | Planned |
+
+## API Keys & Setup
+
+### Browserless.io (Required for Isle of Man)
+
+Used to render the gov.im vehicle search page which blocks standard HTTP requests.
+
+1. Sign up at [browserless.io](https://browserless.io)
+2. Free tier includes 6 hours of browser time per month
+3. Get your API key from the dashboard
+4. Add to Netlify environment variables as `BROWSERLESS_API_KEY`
+
+### DVLA Vehicle Enquiry Service (Planned)
+
+Official UK government API for vehicle data.
+
+1. Apply at [DVLA Developer Portal](https://developer-portal.driver-vehicle-licensing.api.gov.uk/)
+2. Costs approximately 2p per lookup
+3. Provides: make, model, colour, fuel type, tax status, MOT status, CO2 emissions
+
+### MOT History API (Planned)
+
+Official UK government API for MOT test history.
+
+1. Register at [MOT History API](https://documentation.history.mot.api.gov.uk/mot-history-api/register)
+2. Free to use
+3. Requires OAuth 2.0 authentication via Microsoft Entra ID
+4. Provides: full MOT test history, mileage readings, advisories, failures
 
 ## Environment Variables
 
@@ -51,12 +79,14 @@ CarScratch is a web application that aggregates vehicle information from multipl
 # Required for Isle of Man lookups
 BROWSERLESS_API_KEY=your_browserless_api_key
 
-# Planned - Official APIs
+# Planned - Official UK APIs
 DVLA_API_KEY=your_dvla_api_key
 MOT_CLIENT_ID=your_mot_client_id
 MOT_CLIENT_SECRET=your_mot_client_secret
 MOT_API_KEY=your_mot_api_key
 ```
+
+Set these in your Netlify dashboard under **Site Settings > Environment Variables**.
 
 ## Local Development
 
