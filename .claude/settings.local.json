@@ -1,7 +1,21 @@
 {
   "permissions": {
     "allow": [
-      "Bash(where:*)"
+      "Bash(where:*)",
+      "WebFetch(domain:totalcarcheck.co.uk)",
+      "WebFetch(domain:www.check-mot.service.gov.uk)",
+      "WebFetch(domain:www.vehicleenquiry.service.gov.uk)",
+      "WebFetch(domain:www.hpi.co.uk)",
+      "WebFetch(domain:www.carvertical.com)",
+      "WebFetch(domain:www.carcheck.co.uk)",
+      "WebFetch(domain:www.autotrader.co.uk)",
+      "WebFetch(domain:www.vehiclesmart.com)",
+      "WebFetch(domain:www.instantcarcheck.co.uk)",
+      "WebFetch(domain:www.motorcheck.co.uk)",
+      "WebFetch(domain:www.parkers.co.uk)",
+      "WebFetch(domain:www.caranalytics.co.uk)",
+      "WebFetch(domain:www.regcheck.org.uk)",
+      "WebFetch(domain:www.freecarcheck.uk)"
     ]
   }
 }
