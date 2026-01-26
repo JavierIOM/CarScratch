@@ -1,0 +1,30 @@
+{
+  "name": "carscratch",
+  "version": "1.0.0",
+  "description": "UK Vehicle Information Aggregator",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JavierIOM/CarScratch.git"
+  },
+  "keywords": ["car", "vehicle", "uk", "dvla", "mot"],
+  "author": "JavierIOM",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JavierIOM/CarScratch/issues"
+  },
+  "homepage": "https://github.com/JavierIOM/CarScratch#readme",
+  "dependencies": {
+    "@astrojs/netlify": "^6.6.4",
+    "astro": "^5.16.15"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.0",
+    "tailwindcss": "^4.1.0"
+  }
+}

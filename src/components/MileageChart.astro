@@ -1,0 +1,97 @@
+---
+import type { MOTTest } from '../lib/types';
+
+interface Props {
+  tests: MOTTest[];
+}
+
+const { tests } = Astro.props;
+
+// Sort tests by date (oldest first) for the chart
+const sortedTests = [...tests].reverse();
+
+// Calculate chart data
+const mileages = sortedTests.map(t => t.odometerValue);
+const maxMileage = Math.max(...mileages);
+const minMileage = Math.min(...mileages);
+const range = maxMileage - minMileage || 1;
+
+// Calculate yearly average
+const firstTest = sortedTests[0];
+const lastTest = sortedTests[sortedTests.length - 1];
+const firstDate = new Date(firstTest.completedDate);
+const lastDate = new Date(lastTest.completedDate);
+const yearsDiff = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
+const mileageDiff = lastTest.odometerValue - firstTest.odometerValue;
+const yearlyAverage = yearsDiff > 0 ? Math.round(mileageDiff / yearsDiff) : 0;
+
+// Format date for display
+const formatDate = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    month: 'short',
+    year: '2-digit',
+  });
+};
+---
+
+<div class="bg-slate-800/50 border border-slate-700">
+  <div class="p-6 border-b border-slate-700 flex items-center justify-between">
+    <div>
+      <h3 class="text-lg font-semibold">Mileage History</h3>
+      <p class="text-sm text-slate-500 mt-1">
+        Based on {tests.length} MOT test{tests.length !== 1 ? 's' : ''}
+      </p>
+    </div>
+    {yearlyAverage > 0 && (
+      <div class="text-right">
+        <div class="text-2xl font-bold text-amber-500">
+          {yearlyAverage.toLocaleString()}
+        </div>
+        <div class="text-xs text-slate-500">avg miles/year</div>
+      </div>
+    )}
+  </div>
+
+  <div class="p-6">
+    <!-- Simple bar chart -->
+    <div class="space-y-3">
+      {sortedTests.map((test, index) => {
+        const percentage = ((test.odometerValue - minMileage) / range) * 100;
+        const barWidth = Math.max(5, percentage); // Minimum 5% width
+
+        return (
+          <div class="flex items-center gap-4">
+            <div class="w-20 text-sm text-slate-500 shrink-0">
+              {formatDate(test.completedDate)}
+            </div>
+            <div class="flex-1 h-6 bg-slate-700/50 relative overflow-hidden">
+              <div
+                class="h-full bg-gradient-to-r from-amber-600 to-amber-500 transition-all duration-500"
+                style={`width: ${barWidth}%`}
+              ></div>
+            </div>
+            <div class="w-24 text-sm text-right tabular-nums">
+              {test.odometerValue.toLocaleString()} {test.odometerUnit}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    <!-- Summary stats -->
+    <div class="mt-6 pt-6 border-t border-slate-700/50 grid grid-cols-3 gap-4 text-center">
+      <div>
+        <div class="text-xl font-bold">{lastTest.odometerValue.toLocaleString()}</div>
+        <div class="text-xs text-slate-500 mt-1">Current Mileage</div>
+      </div>
+      <div>
+        <div class="text-xl font-bold">{mileageDiff.toLocaleString()}</div>
+        <div class="text-xs text-slate-500 mt-1">Total Recorded</div>
+      </div>
+      <div>
+        <div class="text-xl font-bold">{sortedTests.length}</div>
+        <div class="text-xs text-slate-500 mt-1">MOT Tests</div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,137 @@
+---
+import type { MOTHistory, MOTTest, MOTDefect } from '../lib/types';
+
+interface Props {
+  history: MOTHistory;
+}
+
+const { history } = Astro.props;
+
+// Format date
+const formatDate = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
+// Format mileage
+const formatMileage = (value: number, unit: string) => {
+  return `${value.toLocaleString()} ${unit}`;
+};
+
+// Get defect type styling
+const getDefectClass = (type: string, dangerous?: boolean) => {
+  if (dangerous) return 'bg-red-600/20 text-red-300 border-red-600/40';
+
+  switch (type) {
+    case 'DANGEROUS':
+      return 'bg-red-600/20 text-red-300 border-red-600/40';
+    case 'MAJOR':
+    case 'FAIL':
+      return 'bg-red-500/10 text-red-400 border-red-500/30';
+    case 'MINOR':
+      return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+    case 'ADVISORY':
+      return 'bg-slate-600/30 text-slate-300 border-slate-500/30';
+    case 'PRS':
+      return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
+    default:
+      return 'bg-slate-600/30 text-slate-300 border-slate-500/30';
+  }
+};
+
+// Get defect type label
+const getDefectLabel = (type: string, dangerous?: boolean) => {
+  if (dangerous) return 'Dangerous';
+  switch (type) {
+    case 'FAIL':
+      return 'Failure';
+    case 'PRS':
+      return 'Pass with repair';
+    default:
+      return type.charAt(0) + type.slice(1).toLowerCase();
+  }
+};
+
+// Calculate mileage delta from previous test
+const getMileageDelta = (tests: MOTTest[], index: number) => {
+  if (index >= tests.length - 1) return null;
+  const current = tests[index].odometerValue;
+  const previous = tests[index + 1].odometerValue;
+  return current - previous;
+};
+---
+
+<div class="bg-slate-800/50 border border-slate-700">
+  <div class="p-6 border-b border-slate-700">
+    <h3 class="text-lg font-semibold">MOT History</h3>
+    <p class="text-sm text-slate-500 mt-1">
+      {history.motTests.length} test{history.motTests.length !== 1 ? 's' : ''} on record
+    </p>
+  </div>
+
+  <div class="divide-y divide-slate-700/50">
+    {history.motTests.map((test, index) => {
+      const mileageDelta = getMileageDelta(history.motTests, index);
+      const isPassed = test.testResult === 'PASSED';
+
+      return (
+        <div class="p-6">
+          <!-- Test header -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div class="flex items-center gap-3">
+              <div class={`w-3 h-3 rounded-full ${isPassed ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <div>
+                <span class={`font-semibold ${isPassed ? 'text-green-400' : 'text-red-400'}`}>
+                  {test.testResult}
+                </span>
+                <span class="text-slate-500 mx-2">|</span>
+                <span class="text-slate-300">{formatDate(test.completedDate)}</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 text-sm">
+              <div class="text-slate-400">
+                <span class="text-slate-500">Mileage:</span>{' '}
+                <span class="text-slate-200 font-medium">
+                  {formatMileage(test.odometerValue, test.odometerUnit)}
+                </span>
+                {mileageDelta !== null && mileageDelta > 0 && (
+                  <span class="text-slate-600 ml-1">
+                    (+{mileageDelta.toLocaleString()})
+                  </span>
+                )}
+              </div>
+              {test.expiryDate && (
+                <div class="text-slate-400">
+                  <span class="text-slate-500">Expires:</span>{' '}
+                  <span class="text-slate-200">{formatDate(test.expiryDate)}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <!-- Defects/advisories -->
+          {test.rfrAndComments.length > 0 ? (
+            <div class="space-y-2 ml-6">
+              {test.rfrAndComments.map((defect) => (
+                <div class={`flex items-start gap-3 p-3 border ${getDefectClass(defect.type, defect.dangerous)}`}>
+                  <span class="text-xs font-medium uppercase tracking-wide shrink-0 mt-0.5">
+                    {getDefectLabel(defect.type, defect.dangerous)}
+                  </span>
+                  <span class="text-sm">{defect.text}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div class="ml-6 text-sm text-slate-500 italic">
+              No advisories or defects recorded
+            </div>
+          )}
+        </div>
+      );
+    })}
+  </div>
+</div>

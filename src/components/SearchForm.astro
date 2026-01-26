@@ -1,0 +1,71 @@
+---
+interface Props {
+  initialValue?: string;
+}
+
+const { initialValue = '' } = Astro.props;
+---
+
+<form id="search-form" class="w-full max-w-md mx-auto">
+  <div class="relative">
+    <div class="flex items-stretch">
+      <!-- UK plate blue band -->
+      <div class="flex items-center justify-center w-10 bg-blue-700 rounded-l border-2 border-r-0 border-slate-600">
+        <span class="text-white text-xs font-bold">GB</span>
+      </div>
+
+      <!-- Input field styled like UK plate -->
+      <input
+        type="text"
+        id="registration"
+        name="registration"
+        value={initialValue}
+        placeholder="AB12 CDE"
+        autocomplete="off"
+        spellcheck="false"
+        maxlength="8"
+        class="flex-1 px-4 py-3 bg-amber-400 text-slate-900 text-xl font-bold tracking-wider uppercase placeholder:text-slate-600/50 placeholder:font-normal border-2 border-l-0 border-slate-600 focus:outline-none focus:border-amber-500"
+        style="font-family: 'JetBrains Mono', monospace;"
+      />
+
+      <button
+        type="submit"
+        class="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-slate-900 font-semibold rounded-r border-2 border-l-0 border-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+      >
+        Search
+      </button>
+    </div>
+  </div>
+
+  <p class="mt-3 text-sm text-slate-500 text-center">
+    Enter a UK vehicle registration number
+  </p>
+</form>
+
+<script>
+  const form = document.getElementById('search-form') as HTMLFormElement;
+  const input = document.getElementById('registration') as HTMLInputElement;
+
+  // Format input as user types (add space after 4 chars)
+  input.addEventListener('input', (e) => {
+    const target = e.target as HTMLInputElement;
+    let value = target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+    if (value.length > 4) {
+      value = value.slice(0, 4) + ' ' + value.slice(4);
+    }
+
+    target.value = value;
+  });
+
+  // Handle form submission
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const reg = input.value.replace(/\s/g, '').toUpperCase();
+
+    if (reg.length < 2) return;
+
+    // Navigate to results page
+    window.location.href = `/lookup/${encodeURIComponent(reg)}`;
+  });
+</script>

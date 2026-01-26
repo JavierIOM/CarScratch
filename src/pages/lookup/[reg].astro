@@ -1,0 +1,99 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SearchForm from '../../components/SearchForm.astro';
+import VehicleCard from '../../components/VehicleCard.astro';
+import MOTHistory from '../../components/MOTHistory.astro';
+import MileageChart from '../../components/MileageChart.astro';
+import { getVehicleInfo } from '../../lib/aggregator';
+
+const { reg } = Astro.params;
+
+if (!reg) {
+  return Astro.redirect('/');
+}
+
+const vehicleInfo = await getVehicleInfo(reg);
+
+// Format registration for display
+const formatReg = (r: string) => {
+  const clean = r.replace(/\s/g, '').toUpperCase();
+  if (clean.length > 4) {
+    return clean.slice(0, 4) + ' ' + clean.slice(4);
+  }
+  return clean;
+};
+---
+
+<Layout title={`${formatReg(reg)} - CarScratch`}>
+  <div class="max-w-5xl mx-auto px-4 py-8">
+    <!-- Search form at top -->
+    <div class="mb-8">
+      <SearchForm initialValue={formatReg(reg)} />
+    </div>
+
+    {vehicleInfo.error ? (
+      <!-- Error state -->
+      <div class="bg-slate-800/50 border border-slate-700 p-8 text-center">
+        <div class="w-16 h-16 mx-auto mb-4 bg-red-500/10 text-red-400 flex items-center justify-center">
+          <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 9v4" />
+            <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.875h16.214a1.914 1.914 0 0 0 1.636 -2.875l-8.106 -13.534a1.914 1.914 0 0 0 -3.274 0z" />
+            <path d="M12 16h.01" />
+          </svg>
+        </div>
+        <h2 class="text-xl font-semibold mb-2">Vehicle Not Found</h2>
+        <p class="text-slate-400 mb-6">{vehicleInfo.error}</p>
+        <a
+          href="/"
+          class="inline-block px-6 py-2 bg-amber-600 hover:bg-amber-500 text-slate-900 font-medium transition-colors"
+        >
+          Try Another Search
+        </a>
+      </div>
+    ) : (
+      <!-- Results -->
+      <div class="space-y-6">
+        {vehicleInfo.vehicle && (
+          <VehicleCard vehicle={vehicleInfo.vehicle} />
+        )}
+
+        {vehicleInfo.motHistory && vehicleInfo.motHistory.motTests.length > 1 && (
+          <MileageChart tests={vehicleInfo.motHistory.motTests} />
+        )}
+
+        {vehicleInfo.motHistory && vehicleInfo.motHistory.motTests.length > 0 && (
+          <MOTHistory history={vehicleInfo.motHistory} />
+        )}
+
+        {!vehicleInfo.vehicle && vehicleInfo.motHistory && (
+          <!-- Only MOT data available -->
+          <div class="bg-slate-800/50 border border-slate-700 p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 9v4" />
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 16h.01" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-semibold">Limited Data Available</h3>
+                <p class="text-sm text-slate-400">Only MOT history is available for this vehicle.</p>
+              </div>
+            </div>
+            <p class="text-sm text-slate-500">
+              DVLA vehicle details are not available. This may be because the registration is very
+              new, or there's an issue with the data source.
+            </p>
+          </div>
+        )}
+
+        <!-- Data source notice -->
+        <div class="text-center text-sm text-slate-600 py-4">
+          <p>Data sourced from DVLA Vehicle Enquiry Service and MOT History Service.</p>
+          <p class="mt-1">Last updated: {new Date().toLocaleDateString('en-GB')}</p>
+        </div>
+      </div>
+    )}
+  </div>
+</Layout>

@@ -1,0 +1,147 @@
+---
+import type { VehicleData } from '../lib/types';
+
+interface Props {
+  vehicle: VehicleData;
+}
+
+const { vehicle } = Astro.props;
+
+// Format registration for display
+const formatReg = (reg: string) => {
+  const clean = reg.replace(/\s/g, '').toUpperCase();
+  if (clean.length > 4) {
+    return clean.slice(0, 4) + ' ' + clean.slice(4);
+  }
+  return clean;
+};
+
+// Format date
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return 'N/A';
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
+// Format engine capacity
+const formatEngine = (cc: number) => {
+  if (!cc || cc === 0) return 'N/A';
+  return `${(cc / 1000).toFixed(1)}L (${cc}cc)`;
+};
+
+// Get status colour classes
+const getTaxStatusClass = (status: string) => {
+  switch (status) {
+    case 'Taxed':
+      return 'bg-green-500/10 text-green-400 border-green-500/30';
+    case 'SORN':
+      return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+    default:
+      return 'bg-red-500/10 text-red-400 border-red-500/30';
+  }
+};
+
+const getMOTStatusClass = (status: string) => {
+  switch (status) {
+    case 'Valid':
+      return 'bg-green-500/10 text-green-400 border-green-500/30';
+    default:
+      return 'bg-red-500/10 text-red-400 border-red-500/30';
+  }
+};
+---
+
+<div class="bg-slate-800/50 border border-slate-700">
+  <!-- Header with registration plate -->
+  <div class="p-6 border-b border-slate-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <div class="inline-flex items-stretch mb-3">
+        <div class="flex items-center justify-center w-8 bg-blue-700 rounded-l text-white text-xs font-bold">GB</div>
+        <div class="px-4 py-2 bg-amber-400 text-slate-900 text-2xl font-bold tracking-wider rounded-r" style="font-family: 'JetBrains Mono', monospace;">
+          {formatReg(vehicle.registrationNumber)}
+        </div>
+      </div>
+      <h2 class="text-2xl font-bold">
+        {vehicle.make}
+        {vehicle.model && <span class="text-slate-400 font-normal">{vehicle.model}</span>}
+      </h2>
+    </div>
+
+    <div class="flex gap-2">
+      <span class={`px-3 py-1 text-sm font-medium border ${getTaxStatusClass(vehicle.taxStatus)}`}>
+        Tax: {vehicle.taxStatus}
+      </span>
+      <span class={`px-3 py-1 text-sm font-medium border ${getMOTStatusClass(vehicle.motStatus)}`}>
+        MOT: {vehicle.motStatus}
+      </span>
+    </div>
+  </div>
+
+  <!-- Details grid -->
+  <div class="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div>
+      <dt class="text-sm text-slate-500 mb-1">Colour</dt>
+      <dd class="font-medium capitalize">{vehicle.colour.toLowerCase()}</dd>
+    </div>
+
+    <div>
+      <dt class="text-sm text-slate-500 mb-1">Fuel Type</dt>
+      <dd class="font-medium capitalize">{vehicle.fuelType.toLowerCase()}</dd>
+    </div>
+
+    <div>
+      <dt class="text-sm text-slate-500 mb-1">Engine</dt>
+      <dd class="font-medium">{formatEngine(vehicle.engineCapacity)}</dd>
+    </div>
+
+    <div>
+      <dt class="text-sm text-slate-500 mb-1">Year</dt>
+      <dd class="font-medium">{vehicle.yearOfManufacture}</dd>
+    </div>
+
+    {vehicle.co2Emissions !== undefined && vehicle.co2Emissions > 0 && (
+      <div>
+        <dt class="text-sm text-slate-500 mb-1">CO2 Emissions</dt>
+        <dd class="font-medium">{vehicle.co2Emissions} g/km</dd>
+      </div>
+    )}
+
+    {vehicle.euroStatus && (
+      <div>
+        <dt class="text-sm text-slate-500 mb-1">Euro Status</dt>
+        <dd class="font-medium">{vehicle.euroStatus}</dd>
+      </div>
+    )}
+
+    {vehicle.taxDueDate && (
+      <div>
+        <dt class="text-sm text-slate-500 mb-1">Tax Due</dt>
+        <dd class="font-medium">{formatDate(vehicle.taxDueDate)}</dd>
+      </div>
+    )}
+
+    {vehicle.motExpiryDate && (
+      <div>
+        <dt class="text-sm text-slate-500 mb-1">MOT Expires</dt>
+        <dd class="font-medium">{formatDate(vehicle.motExpiryDate)}</dd>
+      </div>
+    )}
+
+    {vehicle.monthOfFirstRegistration && (
+      <div>
+        <dt class="text-sm text-slate-500 mb-1">First Registered</dt>
+        <dd class="font-medium">{formatDate(vehicle.monthOfFirstRegistration + '-01')}</dd>
+      </div>
+    )}
+
+    {vehicle.dateOfLastV5CIssued && (
+      <div>
+        <dt class="text-sm text-slate-500 mb-1">Last V5C Issued</dt>
+        <dd class="font-medium">{formatDate(vehicle.dateOfLastV5CIssued)}</dd>
+      </div>
+    )}
+  </div>
+</div>

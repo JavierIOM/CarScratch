@@ -1,0 +1,65 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SearchForm from '../components/SearchForm.astro';
+---
+
+<Layout>
+  <div class="max-w-5xl mx-auto px-4 py-16">
+    <!-- Hero section -->
+    <div class="text-center mb-12">
+      <h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+        UK Vehicle <span class="text-amber-500">Information</span>
+      </h1>
+      <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+        Enter any UK registration number to get comprehensive vehicle data including
+        MOT history, tax status, specifications, and more.
+      </p>
+    </div>
+
+    <!-- Search form -->
+    <SearchForm />
+
+    <!-- Features grid -->
+    <div class="mt-20 grid md:grid-cols-3 gap-6">
+      <div class="p-6 bg-slate-800/50 border border-slate-700">
+        <div class="w-10 h-10 bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 12l2 2l4 -4" />
+            <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z" />
+          </svg>
+        </div>
+        <h3 class="font-semibold mb-2">MOT History</h3>
+        <p class="text-sm text-slate-400">
+          Full MOT test history including passes, failures, advisories, and mileage readings.
+        </p>
+      </div>
+
+      <div class="p-6 bg-slate-800/50 border border-slate-700">
+        <div class="w-10 h-10 bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 7h3a1 1 0 0 0 1 -1v-1a2 2 0 0 1 4 0v1a1 1 0 0 0 1 1h3a1 1 0 0 1 1 1v3a1 1 0 0 0 1 1h1a2 2 0 0 1 0 4h-1a1 1 0 0 0 -1 1v3a1 1 0 0 1 -1 1h-3a1 1 0 0 1 -1 -1v-1a2 2 0 0 0 -4 0v1a1 1 0 0 1 -1 1h-3a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1h1a2 2 0 0 0 0 -4h-1a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1" />
+          </svg>
+        </div>
+        <h3 class="font-semibold mb-2">Vehicle Details</h3>
+        <p class="text-sm text-slate-400">
+          Make, model, colour, engine size, fuel type, CO2 emissions, and manufacturing date.
+        </p>
+      </div>
+
+      <div class="p-6 bg-slate-800/50 border border-slate-700">
+        <div class="w-10 h-10 bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 14l6 -6" />
+            <circle cx="15" cy="9" r="1" fill="currentColor" />
+            <circle cx="9" cy="15" r="1" fill="currentColor" />
+            <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z" />
+          </svg>
+        </div>
+        <h3 class="font-semibold mb-2">Tax Status</h3>
+        <p class="text-sm text-slate-400">
+          Current tax status, due dates, and whether the vehicle is SORN declared.
+        </p>
+      </div>
+    </div>
+  </div>
+</Layout>

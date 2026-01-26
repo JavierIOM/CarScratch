@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Amber accent palette */
+  --color-amber-50: oklch(0.987 0.022 95.277);
+  --color-amber-100: oklch(0.962 0.059 95.617);
+  --color-amber-200: oklch(0.924 0.12 95.746);
+  --color-amber-300: oklch(0.879 0.169 91.605);
+  --color-amber-400: oklch(0.828 0.189 84.429);
+  --color-amber-500: oklch(0.769 0.188 70.08);
+  --color-amber-600: oklch(0.666 0.179 58.318);
+  --color-amber-700: oklch(0.555 0.163 48.998);
+  --color-amber-800: oklch(0.473 0.137 46.201);
+  --color-amber-900: oklch(0.414 0.112 45.904);
+
+  /* Dark background palette */
+  --color-slate-900: oklch(0.208 0.042 265.755);
+  --color-slate-800: oklch(0.279 0.041 260.031);
+  --color-slate-700: oklch(0.372 0.044 257.287);
+  --color-slate-600: oklch(0.446 0.043 257.281);
+  --color-slate-500: oklch(0.553 0.046 257.417);
+  --color-slate-400: oklch(0.704 0.04 256.788);
+  --color-slate-300: oklch(0.828 0.027 256.848);
+  --color-slate-200: oklch(0.929 0.013 255.508);
+  --color-slate-100: oklch(0.968 0.007 247.896);
+}
+
+/* Base styles */
+html {
+  background-color: var(--color-slate-900);
+  color: var(--color-slate-100);
+}
+
+body {
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* UK Registration plate style */
+.reg-plate {
+  font-family: 'Charles Wright', var(--font-mono);
+  background: linear-gradient(180deg, #f7f408 0%, #f7d108 100%);
+  color: #000;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: 2px solid #000;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-slate-800);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-slate-600);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-slate-500);
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--color-amber-500);
+  outline-offset: 2px;
+}
