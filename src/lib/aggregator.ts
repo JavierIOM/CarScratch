@@ -1,12 +1,17 @@
 import type { VehicleInfo, VehicleData, ScrapedExtras } from './types';
 import { getMockVehicleData, getMockMOTHistory } from './mock-data';
 import { scrapeTotalCarCheck } from './scraper';
+import { isManxPlate } from './iom-detector';
+import { scrapeIOMVehicle, iomToVehicleData } from './iom-scraper';
 
 // Set to true to use real APIs (when keys are available)
 const USE_REAL_APIS = false;
 
 // Set to true to enable scraping from third-party sites
 const ENABLE_SCRAPING = true;
+
+// Set to true to enable Isle of Man lookups via Browserless
+const ENABLE_IOM_LOOKUP = true;
 
 export async function getVehicleInfo(registration: string): Promise<VehicleInfo> {
   const normalized = registration.toUpperCase().replace(/\s/g, '');
@@ -18,6 +23,96 @@ export async function getVehicleInfo(registration: string): Promise<VehicleInfo>
     };
   }
 
+  // Check if this is an Isle of Man registration
+  const isManx = isManxPlate(registration);
+
+  if (isManx && ENABLE_IOM_LOOKUP) {
+    return getIOMVehicleInfo(normalized, registration);
+  }
+
+  // Standard UK lookup
+  return getUKVehicleInfo(normalized);
+}
+
+/**
+ * Get vehicle info for Isle of Man registrations
+ */
+async function getIOMVehicleInfo(
+  normalized: string,
+  originalReg: string
+): Promise<VehicleInfo> {
+  try {
+    const iomData = await scrapeIOMVehicle(originalReg);
+
+    if (!iomData || !iomData.make) {
+      return {
+        registration: normalized,
+        isManx: true,
+        error:
+          'Isle of Man vehicle not found. Please check the registration number. ' +
+          'Note: IoM lookups require a Browserless API key to be configured.',
+      };
+    }
+
+    // Convert IoM data to standard vehicle format
+    const vehicle = iomToVehicleData(iomData);
+
+    // Build extras with IoM-specific fields
+    const extras: ScrapedExtras = {
+      previousUKRegistration: iomData.previousUKRegistration,
+      dateOfFirstRegistrationIOM: iomData.dateOfFirstRegistrationIOM,
+      modelVariant: iomData.modelVariant,
+      category: iomData.category,
+      sources: ['gov.im'],
+    };
+
+    // If there's a previous UK registration, also fetch UK data for MOT history
+    let motHistory = undefined;
+    let ukExtras: ScrapedExtras | undefined;
+
+    if (iomData.previousUKRegistration) {
+      const ukInfo = await getUKVehicleInfo(
+        iomData.previousUKRegistration.replace(/\s/g, '')
+      );
+      motHistory = ukInfo.motHistory;
+
+      // Merge any UK extras (but keep IoM as primary source)
+      if (ukInfo.extras) {
+        ukExtras = ukInfo.extras;
+      }
+    }
+
+    // Merge extras
+    const mergedExtras: ScrapedExtras = {
+      ...ukExtras,
+      ...extras,
+      sources: [
+        'gov.im',
+        ...(ukExtras?.sources || []),
+      ],
+    };
+
+    return {
+      registration: normalized,
+      vehicle,
+      motHistory,
+      extras: mergedExtras,
+      isManx: true,
+    };
+  } catch (err) {
+    console.error('Error fetching IoM vehicle info:', err);
+    return {
+      registration: normalized,
+      isManx: true,
+      error: 'An error occurred while fetching Isle of Man vehicle data. Please try again.',
+    };
+  }
+}
+
+/**
+ * Get vehicle info for standard UK registrations
+ */
+async function getUKVehicleInfo(normalized: string): Promise<VehicleInfo> {
   try {
     // Start all data fetching in parallel
     const promises: Promise<unknown>[] = [];

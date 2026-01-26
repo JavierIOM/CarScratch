@@ -54,6 +54,13 @@ const formatReg = (r: string) => {
     ) : (
       <!-- Results -->
       <div class="space-y-6">
+        {vehicleInfo.isManx && (
+          <div class="flex items-center gap-2 text-sm">
+            <span class="px-2 py-1 bg-red-600 text-white font-medium">Isle of Man</span>
+            <span class="text-slate-400">Vehicle registered on the Isle of Man</span>
+          </div>
+        )}
+
         {vehicleInfo.vehicle && (
           <VehicleCard vehicle={vehicleInfo.vehicle} />
         )}
@@ -95,7 +102,11 @@ const formatReg = (r: string) => {
 
         <!-- Data source notice -->
         <div class="text-center text-sm text-slate-600 py-4">
-          <p>Data sourced from DVLA Vehicle Enquiry Service and MOT History Service.</p>
+          {vehicleInfo.isManx ? (
+            <p>Data sourced from Isle of Man Government Vehicle Search and UK MOT History Service.</p>
+          ) : (
+            <p>Data sourced from DVLA Vehicle Enquiry Service and MOT History Service.</p>
+          )}
           <p class="mt-1">Last updated: {new Date().toLocaleDateString('en-GB')}</p>
         </div>
       </div>

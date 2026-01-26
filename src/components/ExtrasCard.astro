@@ -11,7 +11,8 @@ const { extras } = Astro.props;
 const hasPerformance = extras.bhp || extras.topSpeed || extras.zeroToSixty;
 const hasCompliance = extras.ulezCompliant !== undefined || extras.cazCompliant !== undefined || extras.insuranceGroup;
 const hasMarket = extras.previousPrice || extras.previousMileage;
-const hasAnyData = hasPerformance || hasCompliance || hasMarket || extras.bodyStyle || extras.registrationLocation;
+const hasIoM = extras.previousUKRegistration || extras.dateOfFirstRegistrationIOM || extras.modelVariant || extras.category;
+const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasIoM || extras.bodyStyle || extras.registrationLocation;
 ---
 
 {hasAnyData && (
@@ -101,6 +102,42 @@ const hasAnyData = hasPerformance || hasCompliance || hasMarket || extras.bodySt
         <div>
           <dt class="text-sm text-slate-500 mb-1">Advertised Mileage</dt>
           <dd class="font-medium">{extras.previousMileage} miles</dd>
+        </div>
+      )}
+
+      {/* Isle of Man specific */}
+      {extras.previousUKRegistration && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Previous UK Reg</dt>
+          <dd class="font-medium">
+            <a
+              href={`/lookup/${extras.previousUKRegistration.replace(/\s/g, '')}`}
+              class="text-amber-400 hover:text-amber-300 underline"
+            >
+              {extras.previousUKRegistration}
+            </a>
+          </dd>
+        </div>
+      )}
+
+      {extras.dateOfFirstRegistrationIOM && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">IoM Registration Date</dt>
+          <dd class="font-medium">{extras.dateOfFirstRegistrationIOM}</dd>
+        </div>
+      )}
+
+      {extras.modelVariant && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Variant</dt>
+          <dd class="font-medium">{extras.modelVariant}</dd>
+        </div>
+      )}
+
+      {extras.category && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Category</dt>
+          <dd class="font-medium">{extras.category}</dd>
         </div>
       )}
     </div>

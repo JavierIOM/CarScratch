@@ -67,6 +67,12 @@ export interface ScrapedExtras {
   bodyStyle?: string;
   registrationLocation?: string;
 
+  // Isle of Man specific
+  previousUKRegistration?: string;
+  dateOfFirstRegistrationIOM?: string;
+  modelVariant?: string;
+  category?: string;
+
   // Source tracking
   sources?: string[];
 }
@@ -77,5 +83,6 @@ export interface VehicleInfo {
   vehicle?: VehicleData;
   motHistory?: MOTHistory;
   extras?: ScrapedExtras;
+  isManx?: boolean;
   error?: string;
 }

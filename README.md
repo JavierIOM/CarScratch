@@ -1,0 +1,110 @@
+# CarScratch
+
+<p align="center">
+  <img src="public/favicon.svg" alt="CarScratch Logo" width="64" height="64">
+</p>
+
+<p align="center">
+  <strong>UK &amp; Isle of Man Vehicle Information Aggregator</strong>
+</p>
+
+<p align="center">
+  <a href="https://carscratch.netlify.app">Live Demo</a>
+</p>
+
+---
+
+## Overview
+
+CarScratch is a web application that aggregates vehicle information from multiple sources for UK and Isle of Man registered vehicles. Enter a registration number to get comprehensive data including vehicle details, MOT history, and more.
+
+## Features
+
+- **Vehicle Details** - Make, model, colour, engine size, fuel type, CO2 emissions
+- **Tax Status** - Current tax status and expiry date
+- **MOT History** - Full MOT test history with pass/fail results, advisories, and defects
+- **Mileage Tracking** - Visual mileage history chart with yearly averages
+- **Performance Data** - BHP, top speed, 0-60 times (where available)
+- **Insurance Group** - Insurance group rating
+- **ULEZ/CAZ Compliance** - London ULEZ and Clean Air Zone compliance status
+- **Isle of Man Support** - Native support for Manx registrations via gov.im
+
+## Tech Stack
+
+- **Framework**: [Astro](https://astro.build) with SSR
+- **Styling**: [Tailwind CSS](https://tailwindcss.com) v4
+- **Hosting**: [Netlify](https://netlify.com)
+- **Scraping**: [Cheerio](https://cheerio.js.org) + [Browserless.io](https://browserless.io)
+
+## Data Sources
+
+| Source | Data Provided |
+|--------|--------------|
+| TotalCarCheck | Vehicle specs, performance, insurance group, ULEZ/CAZ, market data |
+| gov.im | Isle of Man vehicle registration data |
+| DVLA API (planned) | Official UK vehicle data |
+| MOT History API (planned) | Official MOT test history |
+
+## Environment Variables
+
+```env
+# Required for Isle of Man lookups
+BROWSERLESS_API_KEY=your_browserless_api_key
+
+# Planned - Official APIs
+DVLA_API_KEY=your_dvla_api_key
+MOT_CLIENT_ID=your_mot_client_id
+MOT_CLIENT_SECRET=your_mot_client_secret
+MOT_API_KEY=your_mot_api_key
+```
+
+## Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start dev server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## Test Registrations
+
+For testing with mock data:
+
+| Registration | Vehicle |
+|--------------|---------|
+| AB12 CDE | VW Golf - has MOT failures |
+| BD19 XYZ | BMW 3 Series - clean record |
+| YH65 ABC | Ford Focus - SORN, failed MOT |
+| WR71 DEF | Tesla Model 3 - electric |
+| MK08 GHI | Vauxhall Astra - dangerous defect |
+
+For real UK vehicles, enter any valid UK registration number.
+
+For Isle of Man vehicles, enter a Manx plate (e.g., PMN 147 E, MAN 123).
+
+## Supported Registration Formats
+
+### UK
+- Standard format: `AB12 CDE`
+- Older formats: `A123 ABC`, `ABC 123A`
+
+### Isle of Man
+- Classic: `PMN 147 E`, `MAN 123`
+- Letter suffixes: `AMN`, `BMN`, `CMN`, etc.
+- Modern: `1-MN-00`
+
+## License
+
+ISC
+
+## Author
+
+Built by [JavierIOM](https://github.com/JavierIOM)
