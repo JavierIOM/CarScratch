@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://carscratch.netlify.app">Live Demo</a>
+  <a href="https://carscratch.netlify.app">Live Site</a>
 </p>
 
 ---
