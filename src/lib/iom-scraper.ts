@@ -160,17 +160,20 @@ export default async function ({ page }) {
   // This gives us more control and visibility
   const submitResult = await page.evaluate(async (reg, token, action) => {
     try {
-      // Build form data
-      const formData = new FormData();
-      formData.append('RegMarkNo', reg);
+      // Build URL-encoded form data (ASP.NET often prefers this)
+      const params = new URLSearchParams();
+      params.append('RegMarkNo', reg);
       if (token) {
-        formData.append('__RequestVerificationToken', token);
+        params.append('__RequestVerificationToken', token);
       }
 
-      // Make the POST request
+      // Make the POST request with form content type
       const response = await fetch(action || '/service/VehicleSearch', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params.toString(),
         credentials: 'include'
       });
 
