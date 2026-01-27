@@ -137,7 +137,7 @@ export default async function ({ page }) {
     } else {
       // Fallback: click the button via JS
       const btn = document.querySelector('button.btn-primary[type="submit"]');
-      if (btn) (btn as HTMLButtonElement).click();
+      if (btn) btn.click();
     }
   });
 
