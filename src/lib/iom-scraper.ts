@@ -164,9 +164,16 @@ export default async function ({ page }) {
 
   // Capture context around "Make" to understand structure
   let makeContext = '';
-  const makeIndex = html.indexOf('Make');
+  const makeIndex = html.indexOf('<th>Make</th>');
   if (makeIndex !== -1) {
-    makeContext = html.substring(Math.max(0, makeIndex - 50), Math.min(html.length, makeIndex + 200));
+    // Capture more after Make to include the value
+    makeContext = html.substring(makeIndex, Math.min(html.length, makeIndex + 100));
+  } else {
+    // Fallback: search for just "Make"
+    const altIndex = html.indexOf('Make');
+    if (altIndex !== -1) {
+      makeContext = 'altSearch:' + html.substring(altIndex, Math.min(html.length, altIndex + 100));
+    }
   }
 
     return {
