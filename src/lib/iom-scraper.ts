@@ -254,6 +254,7 @@ export default async function ({ page }) {
 
     console.log('IoM search URL:', respData.url);
     console.log('IoM HTML preview:', html.substring(0, 500));
+    console.log('IoM makeContext:', respData.makeContext);
 
     // Check for error pages
     if (
@@ -294,47 +295,64 @@ export default async function ({ page }) {
     // <tr><td>Make</td><td>NISSAN</td></tr>
     // Or it might use a definition list or other structure
 
-    // Helper to find value by label
+    // Helper to find value by label - tries multiple HTML patterns
     const findValue = (label: string): string | undefined => {
-      // Try th/td format (common for data tables)
-      const thCell = $(`th:contains("${label}")`).first();
-      const thSibling = thCell.next('td');
-      if (thSibling.length && thSibling.text().trim()) {
-        return thSibling.text().trim();
+      // Pattern 1: th/td table (e.g., <th>Make</th><td>NISSAN</td>)
+      const thMatch = html.match(new RegExp(`<th[^>]*>\\s*${label}\\s*</th>\\s*<td[^>]*>([^<]+)</td>`, 'i'));
+      if (thMatch && thMatch[1].trim()) {
+        return thMatch[1].trim();
       }
 
-      // Try table row td/td format
-      const tableCell = $(`td:contains("${label}")`).first().next('td');
-      if (tableCell.length && tableCell.text().trim()) {
-        return tableCell.text().trim();
+      // Pattern 2: td/td table (e.g., <td>Make</td><td>NISSAN</td>)
+      const tdMatch = html.match(new RegExp(`<td[^>]*>\\s*${label}\\s*</td>\\s*<td[^>]*>([^<]+)</td>`, 'i'));
+      if (tdMatch && tdMatch[1].trim()) {
+        return tdMatch[1].trim();
       }
 
-      // Try definition list format
-      const dt = $(`dt:contains("${label}")`).first();
-      const dd = dt.next('dd');
-      if (dd.length && dd.text().trim()) {
-        return dd.text().trim();
+      // Pattern 3: label after closing tag (e.g., >Make</th><td>NISSAN</td>)
+      const afterTagMatch = html.match(new RegExp(`>${label}</[^>]+>\\s*<[^>]+>([^<]+)<`, 'i'));
+      if (afterTagMatch && afterTagMatch[1].trim()) {
+        return afterTagMatch[1].trim();
       }
 
-      // Try div/span with label class pattern
-      const labelDiv = $(`[class*="label"]:contains("${label}")`).first();
-      const labelNext = labelDiv.next();
-      if (labelNext.length && labelNext.text().trim()) {
-        return labelNext.text().trim();
+      // Pattern 4: Definition list
+      const dlMatch = html.match(new RegExp(`<dt[^>]*>\\s*${label}\\s*</dt>\\s*<dd[^>]*>([^<]+)</dd>`, 'i'));
+      if (dlMatch && dlMatch[1].trim()) {
+        return dlMatch[1].trim();
       }
 
-      // Try generic text pattern
-      const regex = new RegExp(`${label}[:\\s]*([^<\\n]+)`, 'i');
-      const match = html.match(regex);
-      if (match && match[1]) {
-        return match[1].trim();
+      // Pattern 5: Generic colon format (e.g., Make: NISSAN)
+      const colonMatch = html.match(new RegExp(`${label}\\s*:\\s*([^<\\n,]+)`, 'i'));
+      if (colonMatch && colonMatch[1].trim()) {
+        return colonMatch[1].trim();
+      }
+
+      // Try Cheerio as fallback
+      const thCell = $(`th:contains("${label}")`).first().next('td');
+      if (thCell.length && thCell.text().trim()) {
+        return thCell.text().trim();
+      }
+
+      const tdCell = $(`td:contains("${label}")`).first().next('td');
+      if (tdCell.length && tdCell.text().trim()) {
+        return tdCell.text().trim();
       }
 
       return undefined;
     };
 
-    // Extract all fields
-    vehicleData.make = findValue('Make');
+    // Try parsing from makeContext first (more reliable)
+    if (respData.makeContext) {
+      const makeMatch = respData.makeContext.match(/Make[^>]*>([^<]+)</i);
+      if (makeMatch) {
+        vehicleData.make = makeMatch[1].trim();
+      }
+    }
+
+    // Fall back to findValue
+    if (!vehicleData.make) {
+      vehicleData.make = findValue('Make');
+    }
     vehicleData.model = findValue('Model') && !findValue('Model')?.includes('Variant')
       ? findValue('Model')
       : undefined;
