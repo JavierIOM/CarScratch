@@ -162,6 +162,13 @@ export default async function ({ page }) {
   const hasResults = html.includes('Make') || html.includes('NISSAN') || html.includes('Vehicle Details');
   const contentChanged = !html.includes('Enter a registration');
 
+  // Capture context around "Make" to understand structure
+  let makeContext = '';
+  const makeIndex = html.indexOf('Make');
+  if (makeIndex !== -1) {
+    makeContext = html.substring(Math.max(0, makeIndex - 50), Math.min(html.length, makeIndex + 200));
+  }
+
     return {
       data: {
         html,
@@ -170,7 +177,8 @@ export default async function ({ page }) {
         inputValue: searchReg,
         submitResult,
         contentChanged,
-        hasResults
+        hasResults,
+        makeContext
       },
       type: 'application/json'
     };
@@ -276,8 +284,8 @@ export default async function ({ page }) {
         error: [
           respData.inputValue ? 'Input: ' + respData.inputValue : null,
           respData.submitResult ? 'Submit: ' + respData.submitResult : null,
-          respData.contentChanged !== undefined ? 'Changed: ' + respData.contentChanged : null,
           respData.hasResults !== undefined ? 'HasResults: ' + respData.hasResults : null,
+          respData.makeContext ? 'Context: ' + respData.makeContext : null,
         ].filter(Boolean).join(' | '),
       },
     };
