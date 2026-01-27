@@ -7,9 +7,9 @@ const IOM_PATTERNS = [
   // e.g., PMN 147 E, AMN 123, BMN 456 A
   /^([A-Z])MN\s*\d+\s*[A-Z]?$/i,
 
-  // MAN prefix: MAN followed by numbers
-  // e.g., MAN 123, MAN 1
-  /^MAN\s*\d+$/i,
+  // MAN prefix: MAN followed by numbers and optional letter suffix
+  // e.g., MAN 123, MAN 1, MAN 6 F, MAN 7 F
+  /^MAN\s*\d+\s*[A-Z]?$/i,
 
   // Modern format: number-MN-number
   // e.g., 1-MN-00, 123-MN-456
