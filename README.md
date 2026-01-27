@@ -14,6 +14,8 @@
 
 ---
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/3f954221-7aa6-4912-a111-f20bf830ef93/deploy-status)](https://app.netlify.com/projects/carscratch/deploys)
+
 ## Overview
 
 CarScratch is a web application that aggregates vehicle information from multiple sources for UK and Isle of Man registered vehicles. Enter a registration number to get comprehensive data including vehicle details, MOT history, and more.
