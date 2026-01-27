@@ -189,7 +189,7 @@ export default async function ({ page }) {
     }
 
     // Parse the vehicle data from the table
-    const data: IOMVehicleData = {
+    const vehicleData: IOMVehicleData = {
       registrationNumber: registration,
       scrapedAt: new Date().toISOString(),
     };
@@ -224,21 +224,21 @@ export default async function ({ page }) {
     };
 
     // Extract all fields
-    data.make = findValue('Make');
-    data.model = findValue('Model') && !findValue('Model')?.includes('Variant')
+    vehicleData.make = findValue('Make');
+    vehicleData.model = findValue('Model') && !findValue('Model')?.includes('Variant')
       ? findValue('Model')
       : undefined;
-    data.modelVariant = findValue('Model Variant') || findValue('Variant');
-    data.category = findValue('Category');
-    data.colour = findValue('Colour') || findValue('Color');
-    data.fuelType = findValue('Fuel');
+    vehicleData.modelVariant = findValue('Model Variant') || findValue('Variant');
+    vehicleData.category = findValue('Category');
+    vehicleData.colour = findValue('Colour') || findValue('Color');
+    vehicleData.fuelType = findValue('Fuel');
 
     // Cubic capacity
     const ccStr = findValue('Cubic Capacity');
     if (ccStr) {
       const ccMatch = ccStr.match(/(\d+)/);
       if (ccMatch) {
-        data.cubicCapacity = parseInt(ccMatch[1], 10);
+        vehicleData.cubicCapacity = parseInt(ccMatch[1], 10);
       }
     }
 
@@ -247,25 +247,25 @@ export default async function ({ page }) {
     if (co2Str) {
       const co2Match = co2Str.match(/(\d+)/);
       if (co2Match) {
-        data.co2Emissions = parseInt(co2Match[1], 10);
+        vehicleData.co2Emissions = parseInt(co2Match[1], 10);
       }
     }
 
     // Dates
-    data.dateOfFirstRegistration = findValue('Date of First Registration');
-    data.previousUKRegistration = findValue('Previous Registration Number');
-    data.dateOfFirstRegistrationIOM = findValue('Date of First Registration on IOM');
-    data.wheelPlan = findValue('Wheel Plan');
+    vehicleData.dateOfFirstRegistration = findValue('Date of First Registration');
+    vehicleData.previousUKRegistration = findValue('Previous Registration Number');
+    vehicleData.dateOfFirstRegistrationIOM = findValue('Date of First Registration on IOM');
+    vehicleData.wheelPlan = findValue('Wheel Plan');
 
     // Tax status
     const taxStatusStr = findValue('Status of Vehicle Licence');
-    data.taxStatus = taxStatusStr;
-    data.taxExpiryDate = findValue('Expiry Date of Vehicle Licence');
+    vehicleData.taxStatus = taxStatusStr;
+    vehicleData.taxExpiryDate = findValue('Expiry Date of Vehicle Licence');
 
     // Cache the result
-    iomCache.set(normalized, { data, timestamp: Date.now() });
+    iomCache.set(normalized, { data: vehicleData, timestamp: Date.now() });
 
-    return data;
+    return vehicleData;
   } catch (error) {
     console.error('Error scraping IoM vehicle:', error);
     return null;
