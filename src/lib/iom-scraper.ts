@@ -129,25 +129,20 @@ export default async function ({ page }) {
   // Small delay after typing
   await new Promise(r => setTimeout(r, 300));
 
-  // Find the Search button using exact selector
-  const searchBtn = await page.$('button.btn-primary[type="submit"]');
-  if (!searchBtn) {
-    const html = await page.content();
-    return {
-      data: {
-        error: 'Could not find submit button',
-        html: html.substring(0, 2000),
-        formInfo: JSON.stringify(formInfo)
-      },
-      type: 'application/json'
-    };
-  }
+  // Submit the form via JavaScript (works better with CSRF tokens)
+  await page.evaluate(() => {
+    const form = document.querySelector('form');
+    if (form) {
+      form.submit();
+    } else {
+      // Fallback: click the button via JS
+      const btn = document.querySelector('button.btn-primary[type="submit"]');
+      if (btn) (btn as HTMLButtonElement).click();
+    }
+  });
 
-  // Click the search button and wait for navigation
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 15000 }).catch(() => {}),
-    searchBtn.click()
-  ]);
+  // Wait for navigation
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
 
   // Additional wait for any dynamic content
   await new Promise(r => setTimeout(r, 2000));
