@@ -1,5 +1,4 @@
 import * as cheerio from 'cheerio';
-import { formatManxPlateForApi } from './iom-detector';
 
 export interface IOMVehicleData {
   registrationNumber: string;
@@ -61,9 +60,10 @@ export async function scrapeIOMVehicle(
     // Using stealth techniques to avoid bot detection
     const puppeteerCode = `
 export default async function ({ page }) {
-  const searchReg = "${formattedReg}";
+  try {
+    const searchReg = "${formattedReg}";
 
-  // Set a realistic user agent
+    // Set a realistic user agent
   await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
   // Set realistic viewport
@@ -109,13 +109,14 @@ export default async function ({ page }) {
     };
   });
 
-  // Find the registration input using exact selector from gov.im
-  const input = await page.$('#RegMarkNo');
-  if (!input) {
+  // Find the registration input using evaluate (more reliable than page.$)
+  const inputExists = await page.evaluate(() => !!document.querySelector('#RegMarkNo'));
+
+  if (!inputExists) {
     const html = await page.content();
     return {
       data: {
-        error: 'Could not find #RegMarkNo input',
+        error: 'Could not find #RegMarkNo input via evaluate',
         html: html.substring(0, 2000),
         formInfo: JSON.stringify(formInfo)
       },
@@ -123,56 +124,65 @@ export default async function ({ page }) {
     };
   }
 
-  // Clear and type the registration
-  await input.click({ clickCount: 3 });
-  await input.type(searchReg, { delay: 50 });
+  // Type the registration and submit using evaluate
+  await page.evaluate((reg) => {
+    const input = document.querySelector('#RegMarkNo');
+    if (input) {
+      input.value = reg;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  }, searchReg);
 
   // Small delay after typing
   await new Promise(r => setTimeout(r, 500));
 
-  // Simple approach: just click the submit button and wait
-  const submitBtn = await page.$('button[type="submit"]');
+  // Submit the form via evaluate
+  const submitResult = await page.evaluate(() => {
+    const btn = document.querySelector('button[type="submit"]');
+    if (btn) {
+      btn.click();
+      return 'clicked';
+    }
+    const form = document.querySelector('form');
+    if (form) {
+      form.submit();
+      return 'submitted';
+    }
+    return 'no_element';
+  });
 
-  if (!submitBtn) {
-    const html = await page.content();
-    return {
-      data: {
-        error: 'No submit button found',
-        html: html.substring(0, 2000),
-        formInfo: JSON.stringify(formInfo)
-      },
-      type: 'application/json'
-    };
-  }
-
-  // Get initial page content for comparison
-  const initialContent = await page.content();
-
-  // Click the submit button
-  await submitBtn.click();
-
-  // Wait for either navigation or content change
+  // Wait for navigation/result
   await new Promise(r => setTimeout(r, 5000));
 
   // Get final state
   const html = await page.content();
   const url = page.url();
 
-  // Check if content changed
-  const contentChanged = html !== initialContent;
+  // Check if we got results
   const hasResults = html.includes('Make') || html.includes('NISSAN') || html.includes('Vehicle Details');
+  const contentChanged = !html.includes('Enter a registration');
 
-  return {
-    data: {
-      html,
-      url,
-      formInfo: JSON.stringify(formInfo),
-      inputValue: searchReg,
-      contentChanged,
-      hasResults
-    },
-    type: 'application/json'
-  };
+    return {
+      data: {
+        html,
+        url,
+        formInfo: JSON.stringify(formInfo),
+        inputValue: searchReg,
+        submitResult,
+        contentChanged,
+        hasResults
+      },
+      type: 'application/json'
+    };
+  } catch (err) {
+    return {
+      data: {
+        error: 'Puppeteer error: ' + err.message,
+        stack: err.stack
+      },
+      type: 'application/json'
+    };
+  }
 }
 `;
 
@@ -265,6 +275,7 @@ export default async function ({ page }) {
         htmlPreview: html.substring(0, 500),
         error: [
           respData.inputValue ? 'Input: ' + respData.inputValue : null,
+          respData.submitResult ? 'Submit: ' + respData.submitResult : null,
           respData.contentChanged !== undefined ? 'Changed: ' + respData.contentChanged : null,
           respData.hasResults !== undefined ? 'HasResults: ' + respData.hasResults : null,
         ].filter(Boolean).join(' | '),
