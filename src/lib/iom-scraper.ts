@@ -26,6 +26,7 @@ const IOM_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours (IoM data changes rarely)
 
 /**
  * Scrape vehicle data from the Isle of Man government website using Browserless
+ * The gov.im site uses a form-based search, so we need to interact with the page
  */
 export async function scrapeIOMVehicle(
   registration: string
@@ -47,23 +48,106 @@ export async function scrapeIOMVehicle(
 
   try {
     const formattedReg = formatManxPlateForApi(registration);
-    const targetUrl = `https://services.gov.im/service/VehicleSearch/Vehicle/${encodeURIComponent(formattedReg)}`;
 
-    // Use Browserless /content API to render the page and get HTML
+    // Use Browserless /function API to interact with the form
+    // This runs Puppeteer code that fills in and submits the search form
     const response = await fetch(
-      `https://chrome.browserless.io/content?token=${browserlessApiKey}`,
+      `https://chrome.browserless.io/function?token=${browserlessApiKey}`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          url: targetUrl,
-          waitForSelector: '.vehicle-details, .error-message, h1',
-          timeout: 30000,
-          gotoOptions: {
-            waitUntil: 'networkidle2',
-          },
+          code: `
+            module.exports = async ({ page }) => {
+              const searchReg = "${formattedReg}";
+
+              // Go to the vehicle search page
+              await page.goto('https://services.gov.im/service/VehicleSearch', {
+                waitUntil: 'networkidle2',
+                timeout: 30000
+              });
+
+              // Wait for and fill in the registration input
+              await page.waitForSelector('input[name="reg"], input[id="reg"], input[type="text"]', { timeout: 10000 });
+
+              // Try different possible selectors for the input field
+              const inputSelectors = [
+                'input[name="reg"]',
+                'input[id="reg"]',
+                'input[name="registrationNumber"]',
+                'input[id="registrationNumber"]',
+                'input[name="vrm"]',
+                'input[placeholder*="registration" i]',
+                'input[placeholder*="number" i]',
+                'form input[type="text"]'
+              ];
+
+              let inputFound = false;
+              for (const selector of inputSelectors) {
+                try {
+                  const input = await page.$(selector);
+                  if (input) {
+                    await input.click({ clickCount: 3 }); // Select all
+                    await input.type(searchReg);
+                    inputFound = true;
+                    break;
+                  }
+                } catch (e) {
+                  continue;
+                }
+              }
+
+              if (!inputFound) {
+                return { error: 'Could not find registration input field', html: await page.content() };
+              }
+
+              // Find and click the submit button
+              const buttonSelectors = [
+                'button[type="submit"]',
+                'input[type="submit"]',
+                'button:has-text("Search")',
+                'button:has-text("Find")',
+                'button:has-text("Look")',
+                '.btn-primary',
+                'form button'
+              ];
+
+              let buttonClicked = false;
+              for (const selector of buttonSelectors) {
+                try {
+                  const button = await page.$(selector);
+                  if (button) {
+                    await Promise.all([
+                      page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {}),
+                      button.click()
+                    ]);
+                    buttonClicked = true;
+                    break;
+                  }
+                } catch (e) {
+                  continue;
+                }
+              }
+
+              // If no button found, try pressing Enter
+              if (!buttonClicked) {
+                await page.keyboard.press('Enter');
+                await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+              }
+
+              // Wait a moment for content to load
+              await new Promise(r => setTimeout(r, 2000));
+
+              // Get the page content
+              const html = await page.content();
+              const url = page.url();
+
+              return { html, url };
+            };
+          `,
+          context: {},
         }),
       }
     );
@@ -73,8 +157,22 @@ export async function scrapeIOMVehicle(
       return null;
     }
 
-    const html = await response.text();
+    const result = await response.json();
+
+    if (result.error) {
+      console.error('Browserless function error:', result.error);
+      // Log the HTML for debugging if available
+      if (result.html) {
+        console.log('Page HTML preview:', result.html.substring(0, 500));
+      }
+      return null;
+    }
+
+    const html = result.html || '';
     const $ = cheerio.load(html);
+
+    console.log('IoM search URL:', result.url);
+    console.log('IoM HTML preview:', html.substring(0, 500));
 
     // Check for error pages
     if (
