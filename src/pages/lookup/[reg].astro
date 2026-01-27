@@ -106,6 +106,31 @@ const formatReg = (r: string) => {
           </div>
         )}
 
+        {/* Insurance check link - UK vehicles only */}
+        {!vehicleInfo.isManx && vehicleInfo.vehicle && (
+          <div class="bg-slate-800/30 border border-slate-700/50 p-4 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-blue-500/10 text-blue-400 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm text-slate-300">Check if this vehicle is insured</p>
+                <p class="text-xs text-slate-500">Via the Motor Insurance Database</p>
+              </div>
+            </div>
+            <a
+              href="https://ownvehicle.askmid.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="px-4 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-slate-200 transition-colors flex-shrink-0"
+            >
+              Check on askMID
+            </a>
+          </div>
+        )}
+
         <!-- Data source notice -->
         <div class="text-center text-sm text-slate-600 py-4">
           {vehicleInfo.isManx ? (

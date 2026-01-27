@@ -15,7 +15,10 @@
       "WebFetch(domain:www.parkers.co.uk)",
       "WebFetch(domain:www.caranalytics.co.uk)",
       "WebFetch(domain:www.regcheck.org.uk)",
-      "WebFetch(domain:www.freecarcheck.uk)"
+      "WebFetch(domain:www.freecarcheck.uk)",
+      "Bash(timeout /t 60 /nobreak)",
+      "WebFetch(domain:carscratch.netlify.app)",
+      "WebFetch(domain:www.mib.org.uk)"
     ]
   }
 }
