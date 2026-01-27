@@ -296,7 +296,14 @@ export default async function ({ page }) {
 
     // Helper to find value by label
     const findValue = (label: string): string | undefined => {
-      // Try table row format
+      // Try th/td format (common for data tables)
+      const thCell = $(`th:contains("${label}")`).first();
+      const thSibling = thCell.next('td');
+      if (thSibling.length && thSibling.text().trim()) {
+        return thSibling.text().trim();
+      }
+
+      // Try table row td/td format
       const tableCell = $(`td:contains("${label}")`).first().next('td');
       if (tableCell.length && tableCell.text().trim()) {
         return tableCell.text().trim();
@@ -307,6 +314,13 @@ export default async function ({ page }) {
       const dd = dt.next('dd');
       if (dd.length && dd.text().trim()) {
         return dd.text().trim();
+      }
+
+      // Try div/span with label class pattern
+      const labelDiv = $(`[class*="label"]:contains("${label}")`).first();
+      const labelNext = labelDiv.next();
+      if (labelNext.length && labelNext.text().trim()) {
+        return labelNext.text().trim();
       }
 
       // Try generic text pattern
@@ -407,4 +421,3 @@ export function iomToVehicleData(iom: IOMVehicleData): import('./types').Vehicle
     wheelplan: iom.wheelPlan,
   };
 }
-// Deploy trigger 27 Jan 2026 19:27:39
