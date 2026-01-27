@@ -40,9 +40,9 @@ CarScratch is a web application that aggregates vehicle information from multipl
 
 | Source | Data Provided | Status |
 |--------|--------------|--------|
+| DVLA Vehicle Enquiry API | Official UK vehicle data (make, model, colour, tax, MOT status) | Active |
 | TotalCarCheck | Vehicle specs, performance, insurance group, ULEZ/CAZ, market data | Active (scraping) |
 | gov.im | Isle of Man vehicle registration data | Active (via Browserless) |
-| DVLA Vehicle Enquiry API | Official UK vehicle data | Planned |
 | MOT History API | Official MOT test history | Planned |
 
 ## API Keys & Setup
@@ -56,13 +56,14 @@ Used to render the gov.im vehicle search page which blocks standard HTTP request
 3. Get your API key from the dashboard
 4. Add to Netlify environment variables as `BROWSERLESS_API_KEY`
 
-### DVLA Vehicle Enquiry Service (Planned)
+### DVLA Vehicle Enquiry Service (Active)
 
 Official UK government API for vehicle data.
 
 1. Apply at [DVLA Developer Portal](https://developer-portal.driver-vehicle-licensing.api.gov.uk/)
 2. Costs approximately 2p per lookup
 3. Provides: make, model, colour, fuel type, tax status, MOT status, CO2 emissions
+4. Add to Netlify environment variables as `DVLA_API_KEY`
 
 ### MOT History API (Planned)
 
