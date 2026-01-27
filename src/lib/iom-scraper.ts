@@ -108,13 +108,13 @@ export default async function ({ page }) {
     };
   });
 
-  // Find the registration input - look for any text input
-  const input = await page.$('input[type="text"], input:not([type])');
+  // Find the registration input using exact selector from gov.im
+  const input = await page.$('#RegMarkNo');
   if (!input) {
     const html = await page.content();
     return {
       data: {
-        error: 'Could not find input',
+        error: 'Could not find #RegMarkNo input',
         html: html.substring(0, 2000),
         formInfo: JSON.stringify(formInfo)
       },
@@ -124,41 +124,32 @@ export default async function ({ page }) {
 
   // Clear and type the registration
   await input.click({ clickCount: 3 });
-  await input.type(searchReg, { delay: 100 });
+  await input.type(searchReg, { delay: 50 });
 
   // Small delay after typing
-  await new Promise(r => setTimeout(r, 500));
+  await new Promise(r => setTimeout(r, 300));
 
-  // Try pressing Enter first - often works better with JS forms
-  await page.keyboard.press('Enter');
-
-  // Wait for navigation or content change
-  await Promise.race([
-    page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {}),
-    new Promise(r => setTimeout(r, 3000))
-  ]);
-
-  // Check if we navigated
-  let currentUrl = page.url();
-
-  // If still on search page, try clicking the button
-  if (currentUrl.includes('VehicleSearch') && !currentUrl.includes('Vehicle/')) {
-    // Find and click search button
-    const buttons = await page.$$('button, input[type="submit"]');
-    for (const btn of buttons) {
-      const text = await page.evaluate(el => (el.textContent || el.value || '').toLowerCase(), btn);
-      if (text.includes('search') || text.includes('find') || text.includes('look')) {
-        await btn.click();
-        await Promise.race([
-          page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {}),
-          new Promise(r => setTimeout(r, 3000))
-        ]);
-        break;
-      }
-    }
+  // Find the Search button using exact selector
+  const searchBtn = await page.$('button.btn-primary[type="submit"]');
+  if (!searchBtn) {
+    const html = await page.content();
+    return {
+      data: {
+        error: 'Could not find submit button',
+        html: html.substring(0, 2000),
+        formInfo: JSON.stringify(formInfo)
+      },
+      type: 'application/json'
+    };
   }
 
-  // Wait for any dynamic content
+  // Click the search button and wait for navigation
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 15000 }).catch(() => {}),
+    searchBtn.click()
+  ]);
+
+  // Additional wait for any dynamic content
   await new Promise(r => setTimeout(r, 2000));
 
   // Get final state
