@@ -77,20 +77,6 @@ export default async function ({ page }) {
     window.chrome = { runtime: {} };
   });
 
-  // Capture network requests to see what happens on form submit
-  const networkRequests = [];
-  await page.setRequestInterception(true);
-  page.on('request', request => {
-    if (request.url().includes('VehicleSearch') || request.method() === 'POST') {
-      networkRequests.push({
-        url: request.url(),
-        method: request.method(),
-        postData: request.postData()?.substring(0, 500)
-      });
-    }
-    request.continue();
-  });
-
   // Go to the vehicle search page
   await page.goto('https://services.gov.im/service/VehicleSearch', {
     waitUntil: 'networkidle2',
@@ -144,78 +130,46 @@ export default async function ({ page }) {
   // Small delay after typing
   await new Promise(r => setTimeout(r, 500));
 
-  // Extract the CSRF token from the hidden field
-  const csrfToken = await page.evaluate(() => {
-    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-    return tokenInput ? tokenInput.value : null;
-  });
+  // Simple approach: just click the submit button and wait
+  const submitBtn = await page.$('button[type="submit"]');
 
-  // Get the form action URL
-  const formAction = await page.evaluate(() => {
-    const form = document.querySelector('form');
-    return form ? form.action : null;
-  });
+  if (!submitBtn) {
+    const html = await page.content();
+    return {
+      data: {
+        error: 'No submit button found',
+        html: html.substring(0, 2000),
+        formInfo: JSON.stringify(formInfo)
+      },
+      type: 'application/json'
+    };
+  }
 
-  // Method: Use page.evaluate to submit form via JavaScript fetch
-  // This gives us more control and visibility
-  const submitResult = await page.evaluate(async (reg, token, action) => {
-    try {
-      // Build URL-encoded form data (ASP.NET often prefers this)
-      const params = new URLSearchParams();
-      params.append('RegMarkNo', reg);
-      if (token) {
-        params.append('__RequestVerificationToken', token);
-      }
+  // Get initial page content for comparison
+  const initialContent = await page.content();
 
-      // Make the POST request with form content type
-      const response = await fetch(action || '/service/VehicleSearch', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: params.toString(),
-        credentials: 'include'
-      });
+  // Click the submit button
+  await submitBtn.click();
 
-      const responseText = await response.text();
-      return {
-        ok: response.ok,
-        status: response.status,
-        url: response.url,
-        bodyPreview: responseText.substring(0, 3000),
-        redirected: response.redirected
-      };
-    } catch (err) {
-      return { error: err.message };
-    }
-  }, searchReg, csrfToken, formAction);
+  // Wait for either navigation or content change
+  await new Promise(r => setTimeout(r, 5000));
 
-  // Check results
-  const hasResults = submitResult.bodyPreview &&
-    (submitResult.bodyPreview.includes('Make') ||
-     submitResult.bodyPreview.includes('Vehicle Details') ||
-     submitResult.bodyPreview.includes('NISSAN') ||
-     submitResult.bodyPreview.includes('Colour'));
+  // Get final state
+  const html = await page.content();
+  const url = page.url();
 
-  const inputValue = searchReg;
+  // Check if content changed
+  const contentChanged = html !== initialContent;
+  const hasResults = html.includes('Make') || html.includes('NISSAN') || html.includes('Vehicle Details');
 
-  // Get final state - use the AJAX response if available
-  const html = submitResult.bodyPreview || await page.content();
-  const url = submitResult.url || page.url();
-
-  // Include extra debug info
   return {
     data: {
       html,
       url,
       formInfo: JSON.stringify(formInfo),
-      inputValue,
-      hasResults,
-      csrfToken: csrfToken ? 'present' : 'missing',
-      formAction,
-      submitStatus: submitResult.status,
-      submitError: submitResult.error,
-      networkRequests: JSON.stringify(networkRequests)
+      inputValue: searchReg,
+      contentChanged,
+      hasResults
     },
     type: 'application/json'
   };
@@ -310,11 +264,8 @@ export default async function ({ page }) {
         url: respData.url,
         htmlPreview: html.substring(0, 500),
         error: [
-          respData.submitStatus ? 'Status: ' + respData.submitStatus : null,
-          respData.submitError ? 'Error: ' + respData.submitError : null,
-          respData.csrfToken ? 'CSRF: ' + respData.csrfToken : null,
-          respData.formAction ? 'Action: ' + respData.formAction : null,
           respData.inputValue ? 'Input: ' + respData.inputValue : null,
+          respData.contentChanged !== undefined ? 'Changed: ' + respData.contentChanged : null,
           respData.hasResults !== undefined ? 'HasResults: ' + respData.hasResults : null,
         ].filter(Boolean).join(' | '),
       },
