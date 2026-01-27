@@ -1,6 +1,6 @@
 // Isle of Man registration plate patterns
-// Manx plates use letter combinations ending in MN or MAN
-// Examples: PMN 147 E, MAN 123, 1-MN-00, AMN 1A
+// Manx plates use letter combinations ending in MN, MAN, or MANX
+// Examples: PMN 147 E, MAN 123, MANX 2, 1-MN-00, AMN 1A
 
 const IOM_PATTERNS = [
   // Classic format: [A-Z]MN followed by numbers and optional letter
@@ -10,6 +10,10 @@ const IOM_PATTERNS = [
   // MAN prefix: MAN followed by numbers and optional letter suffix
   // e.g., MAN 123, MAN 1, MAN 6 F, MAN 7 F
   /^MAN\s*\d+\s*[A-Z]?$/i,
+
+  // MANX prefix: MANX followed by numbers and optional letter suffix
+  // e.g., MANX 1, MANX 2, MANX 100 A
+  /^MANX\s*\d+\s*[A-Z]?$/i,
 
   // Modern format: number-MN-number
   // e.g., 1-MN-00, 123-MN-456
