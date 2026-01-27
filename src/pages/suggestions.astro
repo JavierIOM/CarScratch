@@ -1,0 +1,97 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Suggestion Box - CarScratch" description="Submit your suggestions and feedback for CarScratch">
+  <div class="max-w-2xl mx-auto px-4 py-12">
+    <h1 class="text-3xl font-bold mb-2">Suggestion Box</h1>
+    <p class="text-slate-400 mb-8">Got an idea or feedback? Let us know below.</p>
+
+    <form
+      name="suggestions"
+      method="POST"
+      action="/suggestions-thanks"
+      data-netlify="true"
+      netlify-honeypot="bot-field"
+      class="space-y-6"
+    >
+      <!-- Honeypot field for spam protection -->
+      <p class="hidden">
+        <label>
+          Don't fill this out: <input name="bot-field" />
+        </label>
+      </p>
+
+      <input type="hidden" name="form-name" value="suggestions" />
+
+      <div>
+        <label for="name" class="block text-sm font-medium text-slate-300 mb-2">
+          Name <span class="text-slate-500">(optional)</span>
+        </label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          class="w-full px-4 py-3 bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
+          placeholder="Your name"
+        />
+      </div>
+
+      <div>
+        <label for="email" class="block text-sm font-medium text-slate-300 mb-2">
+          Email <span class="text-slate-500">(optional, if you'd like a reply)</span>
+        </label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          class="w-full px-4 py-3 bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
+          placeholder="you@example.com"
+        />
+      </div>
+
+      <div>
+        <label for="type" class="block text-sm font-medium text-slate-300 mb-2">
+          Type
+        </label>
+        <select
+          id="type"
+          name="type"
+          class="w-full px-4 py-3 bg-slate-800 border border-slate-700 text-slate-100 focus:outline-none focus:border-amber-500 transition-colors"
+        >
+          <option value="suggestion">Feature Suggestion</option>
+          <option value="bug">Bug Report</option>
+          <option value="data">Data Issue</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="message" class="block text-sm font-medium text-slate-300 mb-2">
+          Your Message
+        </label>
+        <textarea
+          id="message"
+          name="message"
+          rows="5"
+          required
+          class="w-full px-4 py-3 bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors resize-none"
+          placeholder="Tell us what you think..."
+        ></textarea>
+      </div>
+
+      <button
+        type="submit"
+        class="w-full px-6 py-3 bg-amber-600 hover:bg-amber-500 text-slate-900 font-medium transition-colors"
+      >
+        Submit
+      </button>
+    </form>
+
+    <div class="mt-8 text-center">
+      <a href="/" class="text-sm text-slate-400 hover:text-slate-300 transition-colors">
+        Back to search
+      </a>
+    </div>
+  </div>
+</Layout>
