@@ -130,42 +130,67 @@ export default async function ({ page }) {
   // Small delay after typing
   await new Promise(r => setTimeout(r, 500));
 
-  // Find the submit button
-  const submitBtn = await page.$('button[type="submit"]');
-  if (!submitBtn) {
-    const html = await page.content();
-    return {
-      data: {
-        error: 'Could not find submit button',
-        html: html.substring(0, 2000),
-        formInfo: JSON.stringify(formInfo)
-      },
-      type: 'application/json'
-    };
-  }
+  // Check if input has focus and value
+  const inputValue = await input.evaluate(el => el.value);
+  const hasFocus = await input.evaluate(el => document.activeElement === el);
 
-  // Use Promise.all to click and wait for navigation simultaneously
-  // This is the proper Puppeteer pattern for form submission
+  // Make sure input has focus
+  await input.focus();
+  await new Promise(r => setTimeout(r, 200));
+
+  // Try multiple submission methods in order
+  let submitted = false;
+
+  // Method 1: Press Enter key (most natural user action)
   try {
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 20000 }),
-      submitBtn.click()
+      page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 15000 }),
+      page.keyboard.press('Enter')
     ]);
-  } catch (navErr) {
-    // Navigation may not trigger if it's a SPA - wait and check for content changes
-    await new Promise(r => setTimeout(r, 3000));
+    submitted = true;
+  } catch (e1) {
+    // Method 2: Click the submit button directly
+    try {
+      const submitBtn = await page.$('button.btn-primary[type="submit"]');
+      if (submitBtn) {
+        await Promise.all([
+          page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 15000 }),
+          submitBtn.click()
+        ]);
+        submitted = true;
+      }
+    } catch (e2) {
+      // Navigation didn't happen
+    }
   }
 
-  // Additional wait for any dynamic content
-  await new Promise(r => setTimeout(r, 1000));
+  // Wait for results regardless
+  await new Promise(r => setTimeout(r, 2000));
+
+  // Check if URL changed or if we have vehicle data on the page
+  const currentUrl = page.url();
+  const hasResults = await page.evaluate(() => {
+    // Look for typical vehicle result elements
+    return document.body.innerHTML.includes('Make') ||
+           document.body.innerHTML.includes('Vehicle Details') ||
+           document.body.innerHTML.includes('Model');
+  });
 
   // Get final state
   const html = await page.content();
   const url = page.url();
 
-  // Include form info in response for debugging
+  // Include extra debug info
   return {
-    data: { html, url, formInfo: JSON.stringify(formInfo) },
+    data: {
+      html,
+      url,
+      formInfo: JSON.stringify(formInfo),
+      inputValue,
+      submitted,
+      hasResults,
+      hasFocus
+    },
     type: 'application/json'
   };
 }
