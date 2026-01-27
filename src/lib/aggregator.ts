@@ -3,9 +3,11 @@ import { getMockVehicleData, getMockMOTHistory } from './mock-data';
 import { scrapeTotalCarCheck } from './scraper';
 import { isManxPlate } from './iom-detector';
 import { scrapeIOMVehicle, iomToVehicleData } from './iom-scraper';
+import { getDVLAVehicle } from './dvla';
 
-// Set to true to use real APIs (when keys are available)
-const USE_REAL_APIS = false;
+// Check if DVLA API key is available
+const DVLA_API_KEY = import.meta.env.DVLA_API_KEY;
+const USE_DVLA_API = !!DVLA_API_KEY;
 
 // Set to true to enable scraping from third-party sites
 const ENABLE_SCRAPING = true;
@@ -138,15 +140,14 @@ async function getUKVehicleInfo(normalized: string): Promise<VehicleInfo> {
     // Start all data fetching in parallel
     const promises: Promise<unknown>[] = [];
 
-    // Mock/API data
-    if (USE_REAL_APIS) {
-      // TODO: Implement real API calls when keys are available
-      // promises.push(getDVLAData(normalized));
-      // promises.push(getMOTHistory(normalized));
+    // Use real DVLA API if available, otherwise fall back to mock
+    if (USE_DVLA_API) {
+      promises.push(getDVLAVehicle(normalized));
+    } else {
+      promises.push(getMockVehicleData(normalized));
     }
 
-    // Always fetch mock data for now
-    promises.push(getMockVehicleData(normalized));
+    // MOT history (still using mock for now - TODO: add real MOT API)
     promises.push(getMockMOTHistory(normalized));
 
     // Scrape additional data if enabled
@@ -156,7 +157,7 @@ async function getUKVehicleInfo(normalized: string): Promise<VehicleInfo> {
 
     const results = await Promise.all(promises);
 
-    let vehicle = results[0] as Awaited<ReturnType<typeof getMockVehicleData>>;
+    let vehicle = results[0] as VehicleData | null;
     const motHistory = results[1] as Awaited<ReturnType<typeof getMockMOTHistory>>;
     const scrapedData = ENABLE_SCRAPING
       ? (results[2] as Awaited<ReturnType<typeof scrapeTotalCarCheck>>)
