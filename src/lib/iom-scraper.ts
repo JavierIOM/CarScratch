@@ -357,6 +357,11 @@ export default async function ({ page }) {
 
     // Debug: Try direct regex on html first
     const directMakeMatch = html.match(/<th>Make<\/th>\s*<td>([^<]+)<\/td>/i);
+
+    // Always add debug info about regex result
+    vehicleData._debug!.error = (vehicleData._debug?.error || '') +
+      ' | RegexResult: ' + (directMakeMatch ? 'matched=' + directMakeMatch[1] : 'no match');
+
     if (directMakeMatch) {
       vehicleData.make = directMakeMatch[1].trim();
     }
@@ -364,12 +369,6 @@ export default async function ({ page }) {
     // Fall back to findValue
     if (!vehicleData.make) {
       vehicleData.make = findValue('Make');
-    }
-
-    // Add debug field to track what was found
-    if (!vehicleData.make && html.includes('Make')) {
-      vehicleData._debug!.error = (vehicleData._debug?.error || '') +
-        ' | DirectRegex: failed, html has Make at index ' + html.indexOf('Make');
     }
     vehicleData.model = findValue('Model') && !findValue('Model')?.includes('Variant')
       ? findValue('Model')
