@@ -144,55 +144,61 @@ export default async function ({ page }) {
   // Small delay after typing
   await new Promise(r => setTimeout(r, 500));
 
-  // Check if input has focus and value
-  const inputValue = await input.evaluate(el => el.value);
-  const hasFocus = await input.evaluate(el => document.activeElement === el);
-
-  // Make sure input has focus
-  await input.focus();
-  await new Promise(r => setTimeout(r, 200));
-
-  // Try multiple submission methods in order
-  let submitted = false;
-
-  // Method 1: Press Enter key (most natural user action)
-  try {
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 15000 }),
-      page.keyboard.press('Enter')
-    ]);
-    submitted = true;
-  } catch (e1) {
-    // Method 2: Click the submit button directly
-    try {
-      const submitBtn = await page.$('button.btn-primary[type="submit"]');
-      if (submitBtn) {
-        await Promise.all([
-          page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 15000 }),
-          submitBtn.click()
-        ]);
-        submitted = true;
-      }
-    } catch (e2) {
-      // Navigation didn't happen
-    }
-  }
-
-  // Wait for results regardless
-  await new Promise(r => setTimeout(r, 2000));
-
-  // Check if URL changed or if we have vehicle data on the page
-  const currentUrl = page.url();
-  const hasResults = await page.evaluate(() => {
-    // Look for typical vehicle result elements
-    return document.body.innerHTML.includes('Make') ||
-           document.body.innerHTML.includes('Vehicle Details') ||
-           document.body.innerHTML.includes('Model');
+  // Extract the CSRF token from the hidden field
+  const csrfToken = await page.evaluate(() => {
+    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+    return tokenInput ? tokenInput.value : null;
   });
 
-  // Get final state
-  const html = await page.content();
-  const url = page.url();
+  // Get the form action URL
+  const formAction = await page.evaluate(() => {
+    const form = document.querySelector('form');
+    return form ? form.action : null;
+  });
+
+  // Method: Use page.evaluate to submit form via JavaScript fetch
+  // This gives us more control and visibility
+  const submitResult = await page.evaluate(async (reg, token, action) => {
+    try {
+      // Build form data
+      const formData = new FormData();
+      formData.append('RegMarkNo', reg);
+      if (token) {
+        formData.append('__RequestVerificationToken', token);
+      }
+
+      // Make the POST request
+      const response = await fetch(action || '/service/VehicleSearch', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+
+      const responseText = await response.text();
+      return {
+        ok: response.ok,
+        status: response.status,
+        url: response.url,
+        bodyPreview: responseText.substring(0, 3000),
+        redirected: response.redirected
+      };
+    } catch (err) {
+      return { error: err.message };
+    }
+  }, searchReg, csrfToken, formAction);
+
+  // Check results
+  const hasResults = submitResult.bodyPreview &&
+    (submitResult.bodyPreview.includes('Make') ||
+     submitResult.bodyPreview.includes('Vehicle Details') ||
+     submitResult.bodyPreview.includes('NISSAN') ||
+     submitResult.bodyPreview.includes('Colour'));
+
+  const inputValue = searchReg;
+
+  // Get final state - use the AJAX response if available
+  const html = submitResult.bodyPreview || await page.content();
+  const url = submitResult.url || page.url();
 
   // Include extra debug info
   return {
@@ -201,9 +207,11 @@ export default async function ({ page }) {
       url,
       formInfo: JSON.stringify(formInfo),
       inputValue,
-      submitted,
       hasResults,
-      hasFocus,
+      csrfToken: csrfToken ? 'present' : 'missing',
+      formAction,
+      submitStatus: submitResult.status,
+      submitError: submitResult.error,
       networkRequests: JSON.stringify(networkRequests)
     },
     type: 'application/json'
@@ -299,10 +307,11 @@ export default async function ({ page }) {
         url: respData.url,
         htmlPreview: html.substring(0, 500),
         error: [
-          respData.formInfo ? 'Forms: ' + respData.formInfo : null,
-          respData.networkRequests ? 'Network: ' + respData.networkRequests : null,
-          respData.inputValue ? 'InputVal: ' + respData.inputValue : null,
-          respData.submitted !== undefined ? 'Submitted: ' + respData.submitted : null,
+          respData.submitStatus ? 'Status: ' + respData.submitStatus : null,
+          respData.submitError ? 'Error: ' + respData.submitError : null,
+          respData.csrfToken ? 'CSRF: ' + respData.csrfToken : null,
+          respData.formAction ? 'Action: ' + respData.formAction : null,
+          respData.inputValue ? 'Input: ' + respData.inputValue : null,
           respData.hasResults !== undefined ? 'HasResults: ' + respData.hasResults : null,
         ].filter(Boolean).join(' | '),
       },
