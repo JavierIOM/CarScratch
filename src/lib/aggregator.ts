@@ -44,13 +44,34 @@ async function getIOMVehicleInfo(
   try {
     const iomData = await scrapeIOMVehicle(originalReg);
 
-    if (!iomData || !iomData.make) {
+    if (!iomData) {
       return {
         registration: normalized,
         isManx: true,
         error:
-          'Isle of Man vehicle not found. Please check the registration number. ' +
-          'Note: IoM lookups require a Browserless API key to be configured.',
+          'Isle of Man lookup failed. The gov.im service may be unavailable. ' +
+          'Please try again later.',
+      };
+    }
+
+    if (!iomData.make) {
+      // Include debug info in error if available
+      const debugInfo = iomData._debug;
+      let errorMsg = 'Could not extract vehicle data from gov.im.';
+      if (debugInfo?.error) {
+        errorMsg += ' Error: ' + debugInfo.error;
+      }
+      if (debugInfo?.url) {
+        errorMsg += ' URL: ' + debugInfo.url;
+      }
+      if (debugInfo?.htmlPreview) {
+        // Show first 200 chars of HTML for debugging
+        errorMsg += ' Page preview: ' + debugInfo.htmlPreview.substring(0, 200);
+      }
+      return {
+        registration: normalized,
+        isManx: true,
+        error: errorMsg,
       };
     }
 

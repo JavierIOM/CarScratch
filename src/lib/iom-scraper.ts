@@ -18,6 +18,12 @@ export interface IOMVehicleData {
   taxStatus?: string;
   taxExpiryDate?: string;
   scrapedAt?: string;
+  // Debug info
+  _debug?: {
+    url?: string;
+    htmlPreview?: string;
+    error?: string;
+  };
 }
 
 // Cache for IoM lookups
@@ -156,26 +162,50 @@ export default async function ({ page }) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Browserless returned ${response.status}: ${errorText}`);
-      return null;
+      // Return debug data so we can see what went wrong
+      return {
+        registrationNumber: registration,
+        scrapedAt: new Date().toISOString(),
+        _debug: {
+          error: `Browserless HTTP ${response.status}: ${errorText.substring(0, 200)}`,
+        },
+      };
     }
 
-    const result = await response.json();
+    let result;
+    try {
+      result = await response.json();
+    } catch (jsonErr) {
+      const text = await response.text();
+      return {
+        registrationNumber: registration,
+        scrapedAt: new Date().toISOString(),
+        _debug: {
+          error: 'Failed to parse Browserless response as JSON',
+          htmlPreview: text.substring(0, 500),
+        },
+      };
+    }
 
     // The function returns { data: { html, url } } or { data: { error, html } }
-    const data = result.data || result;
+    const respData = result.data || result;
 
-    if (data.error) {
-      console.error('Browserless function error:', data.error);
-      if (data.html) {
-        console.log('Page HTML preview:', data.html.substring(0, 500));
-      }
-      return null;
+    if (respData.error) {
+      console.error('Browserless function error:', respData.error);
+      return {
+        registrationNumber: registration,
+        scrapedAt: new Date().toISOString(),
+        _debug: {
+          error: respData.error,
+          htmlPreview: respData.html?.substring(0, 500),
+        },
+      };
     }
 
-    const html = data.html || '';
+    const html = respData.html || '';
     const $ = cheerio.load(html);
 
-    console.log('IoM search URL:', data.url);
+    console.log('IoM search URL:', respData.url);
     console.log('IoM HTML preview:', html.substring(0, 500));
 
     // Check for error pages
@@ -184,14 +214,27 @@ export default async function ({ page }) {
       html.includes('was rejected') ||
       html.includes('Vehicle not found')
     ) {
-      iomCache.set(normalized, { data: null, timestamp: Date.now() });
-      return null;
+      const errorData: IOMVehicleData = {
+        registrationNumber: registration,
+        scrapedAt: new Date().toISOString(),
+        _debug: {
+          url: respData.url,
+          error: 'Gov.im returned no vehicle found',
+          htmlPreview: html.substring(0, 500),
+        },
+      };
+      iomCache.set(normalized, { data: errorData, timestamp: Date.now() });
+      return errorData;
     }
 
     // Parse the vehicle data from the table
     const vehicleData: IOMVehicleData = {
       registrationNumber: registration,
       scrapedAt: new Date().toISOString(),
+      _debug: {
+        url: respData.url,
+        htmlPreview: html.substring(0, 500),
+      },
     };
 
     // The IoM site uses a table with rows like:
