@@ -77,6 +77,20 @@ export default async function ({ page }) {
     window.chrome = { runtime: {} };
   });
 
+  // Capture network requests to see what happens on form submit
+  const networkRequests = [];
+  await page.setRequestInterception(true);
+  page.on('request', request => {
+    if (request.url().includes('VehicleSearch') || request.method() === 'POST') {
+      networkRequests.push({
+        url: request.url(),
+        method: request.method(),
+        postData: request.postData()?.substring(0, 500)
+      });
+    }
+    request.continue();
+  });
+
   // Go to the vehicle search page
   await page.goto('https://services.gov.im/service/VehicleSearch', {
     waitUntil: 'networkidle2',
@@ -189,7 +203,8 @@ export default async function ({ page }) {
       inputValue,
       submitted,
       hasResults,
-      hasFocus
+      hasFocus,
+      networkRequests: JSON.stringify(networkRequests)
     },
     type: 'application/json'
   };
@@ -283,7 +298,13 @@ export default async function ({ page }) {
       _debug: {
         url: respData.url,
         htmlPreview: html.substring(0, 500),
-        error: respData.formInfo ? 'Forms found: ' + respData.formInfo : undefined,
+        error: [
+          respData.formInfo ? 'Forms: ' + respData.formInfo : null,
+          respData.networkRequests ? 'Network: ' + respData.networkRequests : null,
+          respData.inputValue ? 'InputVal: ' + respData.inputValue : null,
+          respData.submitted !== undefined ? 'Submitted: ' + respData.submitted : null,
+          respData.hasResults !== undefined ? 'HasResults: ' + respData.hasResults : null,
+        ].filter(Boolean).join(' | '),
       },
     };
 
