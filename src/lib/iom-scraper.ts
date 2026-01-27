@@ -129,53 +129,45 @@ export default async function ({ page }) {
   // Small delay after typing
   await new Promise(r => setTimeout(r, 500));
 
-  // Find the search button - look for submit or button with search-like text
-  const buttons = await page.$$('button, input[type="submit"]');
-  let searchButton = null;
+  // Try pressing Enter first - often works better with JS forms
+  await page.keyboard.press('Enter');
 
-  for (const btn of buttons) {
-    const text = await page.evaluate(el => (el.textContent || el.value || '').toLowerCase(), btn);
-    if (text.includes('search') || text.includes('find') || text.includes('look') || text.includes('go')) {
-      searchButton = btn;
-      break;
+  // Wait for navigation or content change
+  await Promise.race([
+    page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {}),
+    new Promise(r => setTimeout(r, 3000))
+  ]);
+
+  // Check if we navigated
+  let currentUrl = page.url();
+
+  // If still on search page, try clicking the button
+  if (currentUrl.includes('VehicleSearch') && !currentUrl.includes('Vehicle/')) {
+    // Find and click search button
+    const buttons = await page.$$('button, input[type="submit"]');
+    for (const btn of buttons) {
+      const text = await page.evaluate(el => (el.textContent || el.value || '').toLowerCase(), btn);
+      if (text.includes('search') || text.includes('find') || text.includes('look')) {
+        await btn.click();
+        await Promise.race([
+          page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {}),
+          new Promise(r => setTimeout(r, 3000))
+        ]);
+        break;
+      }
     }
   }
 
-  // If no search button found, try first submit button
-  if (!searchButton) {
-    searchButton = await page.$('button[type="submit"], input[type="submit"], button.btn-primary, form button');
-  }
-
-  if (!searchButton) {
-    const html = await page.content();
-    return {
-      data: {
-        error: 'Could not find search button',
-        html: html.substring(0, 2000),
-        formInfo: JSON.stringify(formInfo)
-      },
-      type: 'application/json'
-    };
-  }
-
-  // Click and wait for either navigation or content change
-  await searchButton.click();
-
-  // Wait for either navigation or network idle (for AJAX forms)
-  await Promise.race([
-    page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {}),
-    new Promise(r => setTimeout(r, 5000))
-  ]);
-
-  // Additional wait for any AJAX content
+  // Wait for any dynamic content
   await new Promise(r => setTimeout(r, 2000));
 
-  // Check if we're on a results page or if results appeared
+  // Get final state
   const html = await page.content();
   const url = page.url();
 
+  // Include form info in response for debugging
   return {
-    data: { html, url },
+    data: { html, url, formInfo: JSON.stringify(formInfo) },
     type: 'application/json'
   };
 }
@@ -268,6 +260,7 @@ export default async function ({ page }) {
       _debug: {
         url: respData.url,
         htmlPreview: html.substring(0, 500),
+        error: respData.formInfo ? 'Forms found: ' + respData.formInfo : undefined,
       },
     };
 
