@@ -128,25 +128,36 @@ export default async function ({ page }) {
   await input.type(searchReg, { delay: 50 });
 
   // Small delay after typing
-  await new Promise(r => setTimeout(r, 300));
+  await new Promise(r => setTimeout(r, 500));
 
-  // Submit the form via JavaScript (works better with CSRF tokens)
-  await page.evaluate(() => {
-    const form = document.querySelector('form');
-    if (form) {
-      form.submit();
-    } else {
-      // Fallback: click the button via JS
-      const btn = document.querySelector('button.btn-primary[type="submit"]');
-      if (btn) btn.click();
-    }
-  });
+  // Find the submit button
+  const submitBtn = await page.$('button[type="submit"]');
+  if (!submitBtn) {
+    const html = await page.content();
+    return {
+      data: {
+        error: 'Could not find submit button',
+        html: html.substring(0, 2000),
+        formInfo: JSON.stringify(formInfo)
+      },
+      type: 'application/json'
+    };
+  }
 
-  // Wait for navigation
-  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+  // Use Promise.all to click and wait for navigation simultaneously
+  // This is the proper Puppeteer pattern for form submission
+  try {
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 20000 }),
+      submitBtn.click()
+    ]);
+  } catch (navErr) {
+    // Navigation may not trigger if it's a SPA - wait and check for content changes
+    await new Promise(r => setTimeout(r, 3000));
+  }
 
   // Additional wait for any dynamic content
-  await new Promise(r => setTimeout(r, 2000));
+  await new Promise(r => setTimeout(r, 1000));
 
   // Get final state
   const html = await page.content();
