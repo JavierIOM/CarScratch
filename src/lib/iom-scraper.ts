@@ -297,7 +297,14 @@ export default async function ({ page }) {
 
     // Helper to find value by label - tries multiple HTML patterns
     const findValue = (label: string): string | undefined => {
-      // Pattern 1: th/td table (e.g., <th>Make</th><td>NISSAN</td>)
+      // Pattern 0: Exact gov.im format: <th>Label</th> <td>VALUE</td>
+      // Note: there's often a space or whitespace between </th> and <td>
+      const govImMatch = html.match(new RegExp(`<th>${label}</th>\\s*<td>([^<]+)</td>`, 'i'));
+      if (govImMatch && govImMatch[1].trim()) {
+        return govImMatch[1].trim();
+      }
+
+      // Pattern 1: th/td table with attributes (e.g., <th class="...">Make</th><td>NISSAN</td>)
       const thMatch = html.match(new RegExp(`<th[^>]*>\\s*${label}\\s*</th>\\s*<td[^>]*>([^<]+)</td>`, 'i'));
       if (thMatch && thMatch[1].trim()) {
         return thMatch[1].trim();
