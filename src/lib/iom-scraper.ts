@@ -53,7 +53,8 @@ export async function scrapeIOMVehicle(
   }
 
   try {
-    const formattedReg = formatManxPlateForApi(registration);
+    // Try the registration without any separators - gov.im may expect plain format
+    const formattedReg = registration.toUpperCase().replace(/[\s-]+/g, '');
 
     // Use Browserless /function API to interact with the form
     // This runs Puppeteer code that fills in and submits the search form
