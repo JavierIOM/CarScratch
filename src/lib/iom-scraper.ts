@@ -348,17 +348,21 @@ export default async function ({ page }) {
       return undefined;
     };
 
-    // Try parsing from makeContext first (more reliable)
-    if (respData.makeContext) {
-      const makeMatch = respData.makeContext.match(/Make[^>]*>([^<]+)</i);
-      if (makeMatch) {
-        vehicleData.make = makeMatch[1].trim();
-      }
+    // Debug: Try direct regex on html first
+    const directMakeMatch = html.match(/<th>Make<\/th>\s*<td>([^<]+)<\/td>/i);
+    if (directMakeMatch) {
+      vehicleData.make = directMakeMatch[1].trim();
     }
 
     // Fall back to findValue
     if (!vehicleData.make) {
       vehicleData.make = findValue('Make');
+    }
+
+    // Add debug field to track what was found
+    if (!vehicleData.make && html.includes('Make')) {
+      vehicleData._debug!.error = (vehicleData._debug?.error || '') +
+        ' | DirectRegex: failed, html has Make at index ' + html.indexOf('Make');
     }
     vehicleData.model = findValue('Model') && !findValue('Model')?.includes('Variant')
       ? findValue('Model')
