@@ -57,15 +57,33 @@ export async function scrapeIOMVehicle(
 
     // Use Browserless /function API to interact with the form
     // This runs Puppeteer code that fills in and submits the search form
+    // Using stealth techniques to avoid bot detection
     const puppeteerCode = `
 export default async function ({ page }) {
   const searchReg = "${formattedReg}";
+
+  // Set a realistic user agent
+  await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+
+  // Set realistic viewport
+  await page.setViewport({ width: 1920, height: 1080 });
+
+  // Override webdriver detection
+  await page.evaluateOnNewDocument(() => {
+    Object.defineProperty(navigator, 'webdriver', { get: () => false });
+    Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+    Object.defineProperty(navigator, 'languages', { get: () => ['en-GB', 'en'] });
+    window.chrome = { runtime: {} };
+  });
 
   // Go to the vehicle search page
   await page.goto('https://services.gov.im/service/VehicleSearch', {
     waitUntil: 'networkidle2',
     timeout: 30000
   });
+
+  // Wait a bit for any JS to run
+  await new Promise(r => setTimeout(r, 1000));
 
   // Wait for page to load and find any input
   await page.waitForSelector('input', { timeout: 10000 }).catch(() => {});
@@ -148,8 +166,9 @@ export default async function ({ page }) {
 }
 `;
 
+    // Use stealth flag to avoid bot detection
     const response = await fetch(
-      `https://chrome.browserless.io/function?token=${browserlessApiKey}`,
+      `https://chrome.browserless.io/function?token=${browserlessApiKey}&stealth`,
       {
         method: 'POST',
         headers: {
