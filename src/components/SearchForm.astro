@@ -9,9 +9,9 @@ const { initialValue = '' } = Astro.props;
 <form id="search-form" class="w-full max-w-md mx-auto">
   <div class="relative">
     <div class="flex items-stretch">
-      <!-- UK plate blue band -->
-      <div class="flex items-center justify-center w-10 bg-blue-700 rounded-l border-2 border-r-0 border-slate-600">
-        <span class="text-white text-xs font-bold">GB</span>
+      <!-- UK/IoM plate badge -->
+      <div id="plate-badge" class="flex items-center justify-center w-10 bg-blue-700 rounded-l border-2 border-r-0 border-slate-600 text-white text-xs font-bold">
+        GB
       </div>
 
       <!-- Input field styled like UK plate -->
@@ -23,7 +23,7 @@ const { initialValue = '' } = Astro.props;
         placeholder="AB12 CDE"
         autocomplete="off"
         spellcheck="false"
-        maxlength="8"
+        maxlength="12"
         class="flex-1 px-4 py-3 bg-amber-400 text-slate-900 text-xl font-bold tracking-wider uppercase placeholder:text-slate-600/50 placeholder:font-normal border-2 border-l-0 border-slate-600 focus:outline-none focus:border-amber-500"
         style="font-family: 'JetBrains Mono', monospace;"
       />
@@ -38,24 +38,74 @@ const { initialValue = '' } = Astro.props;
   </div>
 
   <p class="mt-3 text-sm text-slate-500 text-center">
-    Enter a UK vehicle registration number
+    Enter a UK or Isle of Man registration number
   </p>
 </form>
 
 <script>
   const form = document.getElementById('search-form') as HTMLFormElement;
   const input = document.getElementById('registration') as HTMLInputElement;
+  const badge = document.getElementById('plate-badge') as HTMLElement;
 
-  // Format input as user types (add space after 4 chars)
+  // Check if a registration is a Manx plate
+  function isManxPlate(reg: string): boolean {
+    const clean = reg.toUpperCase().replace(/[\s-]+/g, '');
+    const patterns = [
+      /^[A-Z]MN\d+[A-Z]?$/i,      // PMN147E, AMN123
+      /^MAN\d+[A-Z]?$/i,           // MAN6F, MAN123
+      /^MANX\d+[A-Z]?$/i,          // MANX2, MANX100
+      /^\d+MN\d+$/i,               // 1MN00
+      /^[A-Z]{1,2}MN\d+[A-Z]?$/i,  // AMN, BMN, PMN etc
+    ];
+    return patterns.some(p => p.test(clean));
+  }
+
+  // Format Manx plate for display
+  function formatManxPlate(reg: string): string {
+    const clean = reg.toUpperCase().replace(/[\s-]+/g, '');
+    const match = clean.match(/^([A-Z]+)(\d+)([A-Z]?)$/);
+    if (match) {
+      const [, letters, numbers, suffix] = match;
+      return suffix ? `${letters} ${numbers} ${suffix}` : `${letters} ${numbers}`;
+    }
+    return clean;
+  }
+
+  // Format UK plate for display
+  function formatUKPlate(reg: string): string {
+    const clean = reg.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (clean.length > 4) {
+      return clean.slice(0, 4) + ' ' + clean.slice(4);
+    }
+    return clean;
+  }
+
+  // Update the badge based on plate type
+  function updateBadge(isManx: boolean) {
+    if (isManx) {
+      badge.classList.remove('bg-blue-700');
+      badge.classList.add('bg-red-600');
+      badge.textContent = 'M';
+    } else {
+      badge.classList.remove('bg-red-600');
+      badge.classList.add('bg-blue-700');
+      badge.textContent = 'GB';
+    }
+  }
+
+  // Format input as user types
   input.addEventListener('input', (e) => {
     const target = e.target as HTMLInputElement;
-    let value = target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const clean = target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const isManx = isManxPlate(clean);
 
-    if (value.length > 4) {
-      value = value.slice(0, 4) + ' ' + value.slice(4);
+    updateBadge(isManx);
+
+    if (isManx) {
+      target.value = formatManxPlate(clean);
+    } else {
+      target.value = formatUKPlate(clean);
     }
-
-    target.value = value;
   });
 
   // Handle form submission
@@ -68,4 +118,10 @@ const { initialValue = '' } = Astro.props;
     // Navigate to results page
     window.location.href = `/lookup/${encodeURIComponent(reg)}`;
   });
+
+  // Initialize badge on page load if there's a value
+  if (input.value) {
+    const clean = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    updateBadge(isManxPlate(clean));
+  }
 </script>
