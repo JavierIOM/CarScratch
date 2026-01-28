@@ -49,8 +49,17 @@ const formatDate = (dateStr?: string) => {
 };
 
 // Format engine capacity
+// For engines under 1000cc (motorcycles, small engines), just show cc
+// For larger engines, show litres with cc in brackets
 const formatEngine = (cc: number) => {
   if (!cc || cc === 0) return 'N/A';
+
+  // Motorcycles and small engines - just show cc
+  if (cc < 1000) {
+    return `${cc}cc`;
+  }
+
+  // Cars and larger engines - show litres and cc
   return `${(cc / 1000).toFixed(1)}L (${cc}cc)`;
 };
 
