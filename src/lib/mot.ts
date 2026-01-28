@@ -54,37 +54,51 @@ async function getAccessToken(): Promise<string> {
  */
 export async function getMOTHistory(registration: string): Promise<MOTHistory | null> {
   if (!MOT_CLIENT_ID || !MOT_CLIENT_SECRET || !MOT_API_KEY || !MOT_TENANT_ID) {
-    console.warn('MOT API credentials not configured, skipping MOT lookup');
+    console.warn('MOT API credentials not configured. Have:', {
+      clientId: !!MOT_CLIENT_ID,
+      clientSecret: !!MOT_CLIENT_SECRET,
+      apiKey: !!MOT_API_KEY,
+      tenantId: !!MOT_TENANT_ID,
+    });
     return null;
   }
 
   const clean = registration.toUpperCase().replace(/\s/g, '');
 
   try {
+    console.log(`[MOT] Fetching history for ${clean}`);
     const token = await getAccessToken();
+    console.log(`[MOT] Got access token (${token.substring(0, 10)}...)`);
 
-    const res = await fetch(`${MOT_API_BASE}/registration/${clean}`, {
+    const url = `${MOT_API_BASE}/registration/${clean}`;
+    console.log(`[MOT] Requesting: ${url}`);
+
+    const res = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'X-API-Key': MOT_API_KEY,
       },
     });
 
+    console.log(`[MOT] Response status: ${res.status}`);
+
     if (res.status === 404) {
+      console.log(`[MOT] Vehicle not found`);
       return null;
     }
 
     if (!res.ok) {
       const text = await res.text();
-      console.error(`MOT API error (${res.status}): ${text}`);
+      console.error(`[MOT] API error (${res.status}): ${text}`);
       return null;
     }
 
     const data = await res.json() as MOTApiResponse;
+    console.log(`[MOT] Got response with ${data.motTests?.length ?? 0} tests`);
 
     return transformResponse(data, clean);
   } catch (err) {
-    console.error('MOT API request failed:', err);
+    console.error('[MOT] Request failed:', err);
     return null;
   }
 }
