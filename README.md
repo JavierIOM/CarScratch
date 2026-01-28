@@ -48,7 +48,7 @@ CarScratch is a web application that aggregates vehicle information from multipl
 | DVLA Vehicle Enquiry API | Official UK vehicle data (make, model, colour, tax, MOT status) | Active |
 | TotalCarCheck | Vehicle specs, performance, insurance group, ULEZ/CAZ, market data | Active (scraping) |
 | gov.im | Isle of Man vehicle registration data | Active (via Browserless) |
-| MOT History API | Official MOT test history | Planned |
+| MOT History API | Official MOT test history, mileage readings, defects | Active |
 
 ## API Keys & Setup
 
@@ -70,14 +70,15 @@ Official UK government API for vehicle data.
 3. Provides: make, model, colour, fuel type, tax status, MOT status, CO2 emissions
 4. Add to Netlify environment variables as `DVLA_API_KEY`
 
-### MOT History API (Planned)
+### MOT History API (Active)
 
 Official UK government API for MOT test history.
 
 1. Register at [MOT History API](https://documentation.history.mot.api.gov.uk/mot-history-api/register)
 2. Free to use
-3. Requires OAuth 2.0 authentication via Microsoft Entra ID
-4. Provides: full MOT test history, mileage readings, advisories, failures
+3. Requires OAuth 2.0 client credentials flow via Microsoft Entra ID
+4. Provides: full MOT test history, mileage readings, advisories, failures, recall status
+5. Add credentials to environment variables as `MOT_CLIENT_ID`, `MOT_CLIENT_SECRET`, `MOT_API_KEY`, `MOT_TENANT_ID`
 
 ## Environment Variables
 
@@ -90,6 +91,7 @@ DVLA_API_KEY=your_dvla_api_key
 MOT_CLIENT_ID=your_mot_client_id
 MOT_CLIENT_SECRET=your_mot_client_secret
 MOT_API_KEY=your_mot_api_key
+MOT_TENANT_ID=your_mot_tenant_id
 ```
 
 Set these in your Netlify dashboard under **Site Settings > Environment Variables**.

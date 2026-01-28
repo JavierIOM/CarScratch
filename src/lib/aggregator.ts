@@ -4,10 +4,12 @@ import { scrapeTotalCarCheck } from './scraper';
 import { isManxPlate } from './iom-detector';
 import { scrapeIOMVehicle, iomToVehicleData } from './iom-scraper';
 import { getDVLAVehicle } from './dvla';
+import { getMOTHistory } from './mot';
 
-// Check if DVLA API key is available
+// Check if API keys are available
 const DVLA_API_KEY = import.meta.env.DVLA_API_KEY;
 const USE_DVLA_API = !!DVLA_API_KEY;
+const USE_MOT_API = !!(import.meta.env.MOT_CLIENT_ID && import.meta.env.MOT_API_KEY);
 
 /**
  * Validate and sanitize scraped string values
@@ -252,8 +254,12 @@ async function getUKVehicleInfo(normalized: string): Promise<VehicleInfo> {
       promises.push(getMockVehicleData(normalized));
     }
 
-    // MOT history (still using mock for now - TODO: add real MOT API)
-    promises.push(getMockMOTHistory(normalized));
+    // MOT history - use real API if available, otherwise mock
+    if (USE_MOT_API) {
+      promises.push(getMOTHistory(normalized));
+    } else {
+      promises.push(getMockMOTHistory(normalized));
+    }
 
     // Scrape additional data if enabled
     if (ENABLE_SCRAPING) {
