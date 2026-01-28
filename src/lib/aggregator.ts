@@ -9,6 +9,108 @@ import { getDVLAVehicle } from './dvla';
 const DVLA_API_KEY = import.meta.env.DVLA_API_KEY;
 const USE_DVLA_API = !!DVLA_API_KEY;
 
+/**
+ * Validate and sanitize scraped string values
+ * Returns undefined if the value looks like garbage/HTML/invalid
+ */
+function sanitizeScrapedString(value: string | undefined, maxLength = 100): string | undefined {
+  if (!value) return undefined;
+
+  // Trim whitespace
+  const trimmed = value.trim();
+
+  // Reject empty strings
+  if (!trimmed) return undefined;
+
+  // Reject if it contains HTML tags or fragments
+  if (/<[^>]*>/.test(trimmed) || /[<>"]/.test(trimmed)) return undefined;
+
+  // Reject if it's too long (probably scraped garbage)
+  if (trimmed.length > maxLength) return undefined;
+
+  // Reject common garbage patterns
+  const garbagePatterns = [
+    /^n\/?a$/i,           // N/A, N\A
+    /^-$/,                 // Just a dash
+    /^unknown$/i,          // Unknown
+    /^not available$/i,    // Not available
+    /company offers/i,     // Common scraping garbage
+    /settlement figure/i,
+    /click here/i,
+    /learn more/i,
+    /^\s*$/,               // Whitespace only
+  ];
+
+  if (garbagePatterns.some(pattern => pattern.test(trimmed))) return undefined;
+
+  return trimmed;
+}
+
+/**
+ * Validate insurance group - should be a number or number + letter (e.g., "15", "32E")
+ */
+function sanitizeInsuranceGroup(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+
+  // Insurance groups are typically 1-50 with optional letter suffix
+  const match = trimmed.match(/^(\d{1,2}[A-Z]?)$/i);
+  if (match) return match[1].toUpperCase();
+
+  // Try to extract just the number
+  const numMatch = trimmed.match(/\b(\d{1,2})\b/);
+  if (numMatch && parseInt(numMatch[1]) <= 50) return numMatch[1];
+
+  return undefined;
+}
+
+/**
+ * Validate price - should look like a price (£X,XXX or similar)
+ */
+function sanitizePrice(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+
+  // Should contain currency symbol or numbers that look like prices
+  if (/[£$€]?\s*[\d,]+/.test(trimmed) && !/</.test(trimmed)) {
+    // Clean up and return
+    const cleaned = trimmed.replace(/[<>]/g, '');
+    if (cleaned.length <= 20) return cleaned;
+  }
+
+  return undefined;
+}
+
+/**
+ * Validate UK registration - should match UK plate patterns
+ */
+function sanitizeUKRegistration(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim().toUpperCase().replace(/\s/g, '');
+
+  // Reject N/A values
+  if (/^N\/?A$/i.test(trimmed)) return undefined;
+
+  // Basic UK plate patterns (not exhaustive, but catches obvious garbage)
+  const ukPatterns = [
+    /^[A-Z]{2}\d{2}[A-Z]{3}$/,     // Current format: AB12CDE
+    /^[A-Z]\d{1,3}[A-Z]{3}$/,       // Prefix format: A123BCD
+    /^[A-Z]{3}\d{1,3}[A-Z]$/,       // Suffix format: ABC123D
+    /^[A-Z]{1,3}\d{1,4}$/,          // Dateless: ABC1234
+    /^\d{1,4}[A-Z]{1,3}$/,          // Dateless: 1234ABC
+  ];
+
+  if (ukPatterns.some(pattern => pattern.test(trimmed))) {
+    // Format nicely
+    if (trimmed.length > 4) {
+      return trimmed.slice(0, 4) + ' ' + trimmed.slice(4);
+    }
+    return trimmed;
+  }
+
+  return undefined;
+}
+
 // Set to true to enable scraping from third-party sites
 const ENABLE_SCRAPING = true;
 
@@ -80,12 +182,12 @@ async function getIOMVehicleInfo(
     // Convert IoM data to standard vehicle format
     const vehicle = iomToVehicleData(iomData);
 
-    // Build extras with IoM-specific fields
+    // Build extras with IoM-specific fields (sanitized)
     const extras: ScrapedExtras = {
-      previousUKRegistration: iomData.previousUKRegistration,
-      dateOfFirstRegistrationIOM: iomData.dateOfFirstRegistrationIOM,
-      modelVariant: iomData.modelVariant,
-      category: iomData.category,
+      previousUKRegistration: sanitizeUKRegistration(iomData.previousUKRegistration),
+      dateOfFirstRegistrationIOM: sanitizeScrapedString(iomData.dateOfFirstRegistrationIOM),
+      modelVariant: sanitizeScrapedString(iomData.modelVariant),
+      category: sanitizeScrapedString(iomData.category, 20),
       sources: ['gov.im'],
     };
 
@@ -168,20 +270,20 @@ async function getUKVehicleInfo(normalized: string): Promise<VehicleInfo> {
       vehicle = buildVehicleFromScraped(normalized, scrapedData);
     }
 
-    // Build extras from scraped data
+    // Build extras from scraped data (sanitized)
     let extras: ScrapedExtras | undefined;
     if (scrapedData) {
       extras = {
         bhp: scrapedData.bhp,
-        topSpeed: scrapedData.topSpeed,
-        zeroToSixty: scrapedData.zeroToSixty,
-        insuranceGroup: scrapedData.insuranceGroup,
+        topSpeed: sanitizeScrapedString(scrapedData.topSpeed, 30),
+        zeroToSixty: sanitizeScrapedString(scrapedData.zeroToSixty, 30),
+        insuranceGroup: sanitizeInsuranceGroup(scrapedData.insuranceGroup),
         ulezCompliant: scrapedData.ulezCompliant,
         cazCompliant: scrapedData.cazCompliant,
-        previousPrice: scrapedData.previousPrice,
-        previousMileage: scrapedData.previousMileage,
-        bodyStyle: scrapedData.bodyStyle,
-        registrationLocation: scrapedData.registrationLocation,
+        previousPrice: sanitizePrice(scrapedData.previousPrice),
+        previousMileage: sanitizeScrapedString(scrapedData.previousMileage, 30),
+        bodyStyle: sanitizeScrapedString(scrapedData.bodyStyle, 50),
+        registrationLocation: sanitizeScrapedString(scrapedData.registrationLocation, 50),
         sources: scrapedData.scrapedFrom ? [scrapedData.scrapedFrom] : [],
       };
     }
