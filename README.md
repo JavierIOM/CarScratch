@@ -30,6 +30,9 @@ CarScratch is a web application that aggregates vehicle information from multipl
 - **Insurance Group** - Insurance group rating
 - **ULEZ/CAZ Compliance** - London ULEZ and Clean Air Zone compliance status
 - **Isle of Man Support** - Native support for Manx registrations via gov.im
+- **Insurance Check Link** - Quick link to askMID to verify vehicle insurance status
+- **Smart Plate Detection** - Automatically detects UK vs Isle of Man plates with visual badge indicator
+- **Suggestion Box** - User feedback form for feature requests and improvements
 
 ## Tech Stack
 
@@ -134,6 +137,13 @@ For Isle of Man vehicles, enter a Manx plate (e.g., PMN 147 E, MAN 123).
 - Letter suffixes: `AMN`, `BMN`, `CMN`, etc.
 - Modern: `1-MN-00`
 
+## UI Features
+
+- **Smart Plate Badge** - Blue "GB" badge for UK plates, red "M" badge for Isle of Man plates
+- **Progress Indicator** - Animated progress bar during vehicle lookups
+- **Custom 404 Page** - Friendly error page with auto-redirect to home
+- **Responsive Design** - Works on desktop, tablet, and mobile devices
+
 ## License
 
 ISC
@@ -141,3 +151,7 @@ ISC
 ## Author
 
 Built by [JavierIOM](https://github.com/JavierIOM)
+
+---
+
+**Current Version:** v1.1.0
