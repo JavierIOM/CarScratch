@@ -11,9 +11,15 @@ const IOM_PATTERNS = [
   // e.g., MAN 123, MAN 1, MAN 6 F, MAN 7 F
   /^MAN\s*\d+\s*[A-Z]?$/i,
 
+  // Number + MAN suffix: e.g., C2 MAN, A1 MAN, B3 MAN
+  /^[A-Z]\d+\s*MAN$/i,
+
   // MANX prefix: MANX followed by numbers and optional letter suffix
   // e.g., MANX 1, MANX 2, MANX 100 A
   /^MANX\s*\d+\s*[A-Z]?$/i,
+
+  // MN followed by numbers (no letter prefix): MN 1, MN 12, MN 123
+  /^MN\s*\d+\s*[A-Z]?$/i,
 
   // Modern format: number-MN-number
   // e.g., 1-MN-00, 123-MN-456
@@ -48,6 +54,12 @@ export function formatManxPlateForApi(registration: string): string {
   const clean = registration.toUpperCase().replace(/[\s-]+/g, '');
 
   // Try to parse and reformat
+  // Pattern: letter + numbers + MAN (e.g., C2MAN)
+  const manSuffixMatch = clean.match(/^([A-Z]\d+)(MAN)$/);
+  if (manSuffixMatch) {
+    return `${manSuffixMatch[1]}-${manSuffixMatch[2]}`;
+  }
+
   // Pattern: letters, numbers, optional letter
   const match = clean.match(/^([A-Z]+)(\d+)([A-Z]?)$/);
 
@@ -74,6 +86,12 @@ export function formatManxPlateForApi(registration: string): string {
  */
 export function formatManxPlateForDisplay(registration: string): string {
   const clean = registration.toUpperCase().replace(/[\s-]+/g, '');
+
+  // Pattern: letter + numbers + MAN (e.g., C2MAN -> C2 MAN)
+  const manSuffixMatch = clean.match(/^([A-Z]\d+)(MAN)$/);
+  if (manSuffixMatch) {
+    return `${manSuffixMatch[1]} ${manSuffixMatch[2]}`;
+  }
 
   // Pattern: letters, numbers, optional letter
   const match = clean.match(/^([A-Z]+)(\d+)([A-Z]?)$/);
