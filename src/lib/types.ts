@@ -83,6 +83,7 @@ export interface VehicleInfo {
   vehicle?: VehicleData;
   motHistory?: MOTHistory;
   extras?: ScrapedExtras;
+  ukVehicle?: VehicleData;
   isManx?: boolean;
   error?: string;
 }

@@ -194,12 +194,14 @@ async function getIOMVehicleInfo(
     // If there's a previous UK registration, also fetch UK data for MOT history
     let motHistory = undefined;
     let ukExtras: ScrapedExtras | undefined;
+    let ukVehicle: VehicleData | undefined;
 
     if (iomData.previousUKRegistration) {
       const ukInfo = await getUKVehicleInfo(
         iomData.previousUKRegistration.replace(/\s/g, '')
       );
       motHistory = ukInfo.motHistory;
+      ukVehicle = ukInfo.vehicle;
 
       // Merge any UK extras (but keep IoM as primary source)
       if (ukInfo.extras) {
@@ -222,6 +224,7 @@ async function getIOMVehicleInfo(
       vehicle,
       motHistory,
       extras: mergedExtras,
+      ukVehicle,
       isManx: true,
     };
   } catch (err) {
