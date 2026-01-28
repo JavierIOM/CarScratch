@@ -9,7 +9,7 @@ import { getMOTHistory } from './mot';
 // Check if API keys are available
 const DVLA_API_KEY = import.meta.env.DVLA_API_KEY;
 const USE_DVLA_API = !!DVLA_API_KEY;
-const USE_MOT_API = !!(import.meta.env.MOT_CLIENT_ID && import.meta.env.MOT_API_KEY);
+const USE_MOT_API = !!(import.meta.env.MOT_CLIENT_ID && import.meta.env.MOT_CLIENT_SECRET && import.meta.env.MOT_API_KEY);
 
 /**
  * Validate and sanitize scraped string values

@@ -3,7 +3,8 @@ import type { MOTHistory, MOTTest, MOTDefect } from './types';
 const MOT_CLIENT_ID = import.meta.env.MOT_CLIENT_ID;
 const MOT_CLIENT_SECRET = import.meta.env.MOT_CLIENT_SECRET;
 const MOT_API_KEY = import.meta.env.MOT_API_KEY;
-const MOT_TENANT_ID = import.meta.env.MOT_TENANT_ID;
+// DVSA shared Entra tenant ID - this is public and the same for all MOT API users
+const MOT_TENANT_ID = 'a455b827-244f-4c97-b5b4-ce5d13b4d00c';
 
 const TOKEN_URL = `https://login.microsoftonline.com/${MOT_TENANT_ID}/oauth2/v2.0/token`;
 const MOT_API_BASE = 'https://history.mot.api.gov.uk/v1/trade/vehicles';
@@ -53,12 +54,11 @@ async function getAccessToken(): Promise<string> {
  * Fetch MOT history for a vehicle by registration number
  */
 export async function getMOTHistory(registration: string): Promise<MOTHistory | null> {
-  if (!MOT_CLIENT_ID || !MOT_CLIENT_SECRET || !MOT_API_KEY || !MOT_TENANT_ID) {
+  if (!MOT_CLIENT_ID || !MOT_CLIENT_SECRET || !MOT_API_KEY) {
     console.warn('MOT API credentials not configured. Have:', {
       clientId: !!MOT_CLIENT_ID,
       clientSecret: !!MOT_CLIENT_SECRET,
       apiKey: !!MOT_API_KEY,
-      tenantId: !!MOT_TENANT_ID,
     });
     return null;
   }
