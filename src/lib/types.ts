@@ -77,12 +77,20 @@ export interface ScrapedExtras {
   sources?: string[];
 }
 
+// Insurance check result
+export interface InsuranceStatus {
+  insured: boolean | null;
+  message?: string;
+  checkedAt: string;
+}
+
 // Combined vehicle info from all sources
 export interface VehicleInfo {
   registration: string;
   vehicle?: VehicleData;
   motHistory?: MOTHistory;
   extras?: ScrapedExtras;
+  insurance?: InsuranceStatus;
   ukVehicle?: VehicleData;
   isManx?: boolean;
   error?: string;

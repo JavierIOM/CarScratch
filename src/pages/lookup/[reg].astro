@@ -179,8 +179,37 @@ const vehicleSchema = vehicle ? {
           </div>
         )}
 
-        {/* Insurance check link - UK vehicles only */}
-        {!vehicleInfo.isManx && vehicleInfo.vehicle && (
+        {/* Insurance status */}
+        {vehicleInfo.insurance && vehicleInfo.insurance.insured !== null && (
+          <div class={`border p-4 flex items-center gap-3 ${
+            vehicleInfo.insurance.insured
+              ? 'bg-green-500/10 border-green-500/30'
+              : 'bg-red-500/10 border-red-500/30'
+          }`}>
+            <div class={`w-8 h-8 flex items-center justify-center flex-shrink-0 ${
+              vehicleInfo.insurance.insured ? 'text-green-400' : 'text-red-400'
+            }`}>
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <div>
+              <p class={`text-sm font-medium ${
+                vehicleInfo.insurance.insured ? 'text-green-400' : 'text-red-400'
+              }`}>
+                {vehicleInfo.insurance.insured ? 'Insured' : 'Not Insured'}
+              </p>
+              <p class="text-xs text-slate-500">
+                {vehicleInfo.insurance.message || (vehicleInfo.insurance.insured
+                  ? 'Vehicle appears on the Motor Insurance Database'
+                  : 'Vehicle does not appear on the Motor Insurance Database'
+                )}
+              </p>
+            </div>
+          </div>
+        )}
+        {/* Fallback: link to askMID if we couldn't check */}
+        {!vehicleInfo.insurance && vehicleInfo.vehicle && (
           <div class="bg-slate-800/30 border border-slate-700/50 p-4 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 bg-blue-500/10 text-blue-400 flex items-center justify-center flex-shrink-0">
