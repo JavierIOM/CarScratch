@@ -33,6 +33,8 @@ export async function checkInsurance(registration: string): Promise<InsuranceRes
       ? normalized.slice(0, 4) + ' ' + normalized.slice(4)
       : normalized;
 
+    // Puppeteer script that runs inside Browserless
+    // Uses page.type() for React compatibility and longer waits for SPA rendering
     const puppeteerCode = `
 export default async function ({ page }) {
   try {
@@ -54,57 +56,118 @@ export default async function ({ page }) {
       timeout: 30000
     });
 
-    // Wait for the page to fully render (Next.js SPA)
-    await new Promise(r => setTimeout(r, 3000));
+    // Wait longer for the Next.js SPA to fully hydrate
+    await new Promise(r => setTimeout(r, 5000));
 
-    // Look for input fields - try various selectors
-    const inputInfo = await page.evaluate(() => {
-      const inputs = Array.from(document.querySelectorAll('input'));
-      return inputs.map(i => ({
-        type: i.type,
-        name: i.name,
-        id: i.id,
-        placeholder: i.placeholder,
-        'aria-label': i.getAttribute('aria-label'),
-        className: i.className.substring(0, 100)
-      }));
-    });
-
-    // Find the registration input
-    const typed = await page.evaluate((reg) => {
-      // Try common selectors for registration input
-      const selectors = [
-        'input[name="vrm"]',
-        'input[name="registration"]',
-        'input[name="reg"]',
-        'input[name="registrationNumber"]',
-        'input[placeholder*="registration" i]',
-        'input[placeholder*="reg" i]',
-        'input[placeholder*="vrm" i]',
-        'input[placeholder*="number plate" i]',
-        'input[aria-label*="registration" i]',
-        'input[aria-label*="vehicle" i]',
-        'input[type="text"]',
+    // Dismiss any cookie consent banners first
+    await page.evaluate(() => {
+      const cookieSelectors = [
+        'button[id*="accept"]',
+        'button[class*="accept"]',
+        'button[data-testid*="accept"]',
+        'a[id*="accept"]',
       ];
-
-      for (const sel of selectors) {
-        const input = document.querySelector(sel);
-        if (input) {
-          input.value = reg;
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          input.dispatchEvent(new Event('change', { bubbles: true }));
-          return { found: true, selector: sel, id: input.id, name: input.name };
+      for (const sel of cookieSelectors) {
+        const btn = document.querySelector(sel);
+        if (btn) {
+          btn.click();
+          break;
         }
       }
-      return { found: false };
-    }, searchReg);
+      // Also try clicking buttons with accept-like text
+      const buttons = document.querySelectorAll('button, a');
+      for (const btn of buttons) {
+        const text = (btn.textContent || '').toLowerCase();
+        if (text.includes('accept') || text.includes('agree') || text.includes('got it') || text.includes('ok')) {
+          btn.click();
+          break;
+        }
+      }
+    });
 
-    if (!typed.found) {
+    await new Promise(r => setTimeout(r, 1000));
+
+    // Gather diagnostic info about all interactive elements
+    const pageInfo = await page.evaluate(() => {
+      const inputs = Array.from(document.querySelectorAll('input, textarea'));
+      const buttons = Array.from(document.querySelectorAll('button, input[type="submit"], a[role="button"]'));
+      const forms = Array.from(document.querySelectorAll('form'));
+      return {
+        url: window.location.href,
+        title: document.title,
+        inputs: inputs.map(i => ({
+          tag: i.tagName,
+          type: i.getAttribute('type'),
+          name: i.getAttribute('name'),
+          id: i.id,
+          placeholder: i.getAttribute('placeholder'),
+          ariaLabel: i.getAttribute('aria-label'),
+          className: (i.className || '').substring(0, 80),
+          dataTestId: i.getAttribute('data-testid'),
+        })),
+        buttons: buttons.map(b => ({
+          tag: b.tagName,
+          type: b.getAttribute('type'),
+          text: (b.textContent || '').trim().substring(0, 50),
+          id: b.id,
+          className: (b.className || '').substring(0, 80),
+          dataTestId: b.getAttribute('data-testid'),
+        })),
+        formCount: forms.length,
+        bodyTextPreview: (document.body?.innerText || '').substring(0, 1000),
+      };
+    });
+
+    // Try to find the registration input using multiple strategies
+    const inputSelectors = [
+      'input[name="vrm"]',
+      'input[name="registration"]',
+      'input[name="reg"]',
+      'input[name="registrationNumber"]',
+      'input[name="vehicleRegistrationMark"]',
+      'input[id*="vrm" i]',
+      'input[id*="reg" i]',
+      'input[id*="vehicle" i]',
+      'input[data-testid*="vrm" i]',
+      'input[data-testid*="reg" i]',
+      'input[data-testid*="vehicle" i]',
+      'input[placeholder*="registration" i]',
+      'input[placeholder*="reg" i]',
+      'input[placeholder*="vrm" i]',
+      'input[placeholder*="number plate" i]',
+      'input[placeholder*="enter" i]',
+      'input[aria-label*="registration" i]',
+      'input[aria-label*="vehicle" i]',
+      'input[aria-label*="vrm" i]',
+      'input[type="text"]',
+      'input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"])',
+    ];
+
+    // Use page.type() instead of setting .value for React compatibility
+    let typed = false;
+    let usedSelector = '';
+
+    for (const sel of inputSelectors) {
+      try {
+        const exists = await page.$(sel);
+        if (exists) {
+          // Clear any existing value first
+          await page.click(sel, { clickCount: 3 });
+          await page.type(sel, searchReg, { delay: 50 });
+          typed = true;
+          usedSelector = sel;
+          break;
+        }
+      } catch (e) {
+        // selector didn't match, try next
+      }
+    }
+
+    if (!typed) {
       return {
         data: {
           error: 'Could not find registration input',
-          inputs: JSON.stringify(inputInfo),
-          html: (await page.content()).substring(0, 2000)
+          pageInfo: JSON.stringify(pageInfo),
         },
         type: 'application/json'
       };
@@ -113,48 +176,68 @@ export default async function ({ page }) {
     await new Promise(r => setTimeout(r, 500));
 
     // Click submit button
-    const submitted = await page.evaluate(() => {
-      const selectors = [
-        'button[type="submit"]',
-        'button:not([type="button"])',
-        'input[type="submit"]',
-        'button',
-      ];
-      for (const sel of selectors) {
-        const btns = document.querySelectorAll(sel);
-        for (const btn of btns) {
-          const text = btn.textContent?.toLowerCase() || '';
-          if (text.includes('search') || text.includes('check') || text.includes('find') || text.includes('submit') || text.includes('go')) {
+    const submitSelectors = [
+      'button[type="submit"]',
+      'input[type="submit"]',
+    ];
+
+    let submitted = false;
+    let submitInfo = '';
+
+    // First try explicit submit buttons
+    for (const sel of submitSelectors) {
+      try {
+        const btn = await page.$(sel);
+        if (btn) {
+          await btn.click();
+          submitted = true;
+          submitInfo = sel;
+          break;
+        }
+      } catch (e) {}
+    }
+
+    // Fallback: find buttons by text content
+    if (!submitted) {
+      submitted = await page.evaluate(() => {
+        const buttons = document.querySelectorAll('button, a[role="button"]');
+        const keywords = ['search', 'check', 'find', 'submit', 'go', 'look up', 'lookup'];
+        for (const btn of buttons) {
+          const text = (btn.textContent || '').toLowerCase().trim();
+          if (keywords.some(kw => text.includes(kw))) {
             btn.click();
-            return { clicked: true, text: btn.textContent?.trim(), selector: sel };
+            return true;
           }
         }
-      }
-      // Fallback: click first submit button
-      const submitBtn = document.querySelector('button[type="submit"]');
-      if (submitBtn) {
-        submitBtn.click();
-        return { clicked: true, text: submitBtn.textContent?.trim(), selector: 'button[type="submit"]' };
-      }
-      return { clicked: false };
-    });
+        return false;
+      });
+      submitInfo = 'text-match';
+    }
+
+    // Fallback: press Enter in the input field
+    if (!submitted) {
+      try {
+        await page.keyboard.press('Enter');
+        submitted = true;
+        submitInfo = 'enter-key';
+      } catch (e) {}
+    }
 
     // Wait for results to load
-    await new Promise(r => setTimeout(r, 5000));
+    await new Promise(r => setTimeout(r, 8000));
 
     // Extract the result
-    const html = await page.content();
-    const url = page.url();
+    const finalUrl = page.url();
     const bodyText = await page.evaluate(() => document.body?.innerText || '');
 
     return {
       data: {
-        html,
-        url,
         bodyText,
-        inputInfo: JSON.stringify(inputInfo),
-        typed: JSON.stringify(typed),
-        submitted: JSON.stringify(submitted)
+        url: finalUrl,
+        usedSelector,
+        submitInfo,
+        inputCount: pageInfo.inputs.length,
+        pageInfo: JSON.stringify(pageInfo),
       },
       type: 'application/json'
     };
@@ -197,23 +280,39 @@ export default async function ({ page }) {
 
     const respData = result.data || result;
 
+    // Log diagnostic info
+    if (respData.pageInfo) {
+      console.log(`[Insurance] Page info: ${respData.pageInfo.substring(0, 500)}`);
+    }
+    if (respData.usedSelector) {
+      console.log(`[Insurance] Used selector: ${respData.usedSelector}`);
+    }
+    if (respData.submitInfo) {
+      console.log(`[Insurance] Submit method: ${respData.submitInfo}`);
+    }
+
     if (respData.error) {
       console.error('[Insurance] Scraping error:', respData.error);
+      // Log page info so we can debug selector issues
+      if (respData.pageInfo) {
+        console.error('[Insurance] Page structure:', respData.pageInfo.substring(0, 1000));
+      }
       return null;
     }
 
     const bodyText: string = respData.bodyText || '';
-    const html: string = respData.html || '';
 
     console.log(`[Insurance] URL: ${respData.url}`);
     console.log(`[Insurance] Body text preview: ${bodyText.substring(0, 500)}`);
 
     // Parse the result from the page text
-    const insuranceResult = parseInsuranceResult(bodyText, html);
+    const insuranceResult = parseInsuranceResult(bodyText);
 
     // Cache the result
     if (insuranceResult) {
       insuranceCache.set(normalized, { data: insuranceResult, timestamp: Date.now() });
+    } else {
+      console.warn(`[Insurance] Could not parse result. Full body text: ${bodyText.substring(0, 2000)}`);
     }
 
     return insuranceResult;
@@ -223,18 +322,22 @@ export default async function ({ page }) {
   }
 }
 
-function parseInsuranceResult(bodyText: string, html: string): InsuranceResult | null {
+function parseInsuranceResult(bodyText: string): InsuranceResult | null {
   const text = bodyText.toLowerCase();
   const now = new Date().toISOString();
 
-  // Common positive indicators
+  // Positive indicators
   if (
     text.includes('vehicle is insured') ||
     text.includes('is currently insured') ||
     text.includes('insurance was found') ||
     text.includes('appears on the mid') ||
     text.includes('has been found on the motor insurance database') ||
-    text.includes('details have been found')
+    text.includes('details have been found') ||
+    text.includes('this vehicle is insured') ||
+    text.includes('a policy has been found') ||
+    text.includes('record found') ||
+    text.includes('is insured')
   ) {
     return {
       insured: true,
@@ -243,7 +346,7 @@ function parseInsuranceResult(bodyText: string, html: string): InsuranceResult |
     };
   }
 
-  // Common negative indicators
+  // Negative indicators
   if (
     text.includes('vehicle is not insured') ||
     text.includes('not currently insured') ||
@@ -251,19 +354,16 @@ function parseInsuranceResult(bodyText: string, html: string): InsuranceResult |
     text.includes('does not appear') ||
     text.includes('has not been found') ||
     text.includes('not found on the motor insurance database') ||
-    text.includes('no record')
+    text.includes('no record') ||
+    text.includes('is not insured') ||
+    text.includes('no policy found') ||
+    text.includes('not insured')
   ) {
     return {
       insured: false,
       message: 'Vehicle does not appear on the Motor Insurance Database',
       checkedAt: now,
     };
-  }
-
-  // If we got a page but couldn't determine status
-  if (bodyText.length > 100) {
-    console.warn('[Insurance] Could not determine insurance status from page text');
-    return null;
   }
 
   return null;
