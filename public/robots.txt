@@ -1,0 +1,14 @@
+# CarScratch Robots.txt
+# https://carscratch.netlify.app
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://carscratch.netlify.app/sitemap.xml
+
+# Disallow admin/internal paths
+Disallow: /api/
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1

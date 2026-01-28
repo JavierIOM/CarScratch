@@ -29,9 +29,51 @@ const formatReg = (r: string) => {
   }
   return clean;
 };
+
+const formattedReg = formatReg(reg);
+
+// Generate SEO metadata
+const vehicle = vehicleInfo.vehicle;
+const pageTitle = vehicle
+  ? `${formattedReg} - ${vehicle.make} ${vehicle.model || ''} | CarScratch`
+  : `${formattedReg} - Vehicle Lookup | CarScratch`;
+
+const pageDescription = vehicle
+  ? `View details for ${formattedReg}: ${vehicle.make} ${vehicle.model || ''}, ${vehicle.colour}, ${vehicle.fuelType}, ${vehicle.yearOfManufacture}. Check MOT history, tax status, and more.`
+  : `Look up vehicle information for registration ${formattedReg}. Check MOT history, tax status, mileage, and specifications.`;
+
+// Vehicle structured data for SEO
+const vehicleSchema = vehicle ? {
+  '@context': 'https://schema.org',
+  '@type': 'Car',
+  name: `${vehicle.make} ${vehicle.model || ''}`,
+  manufacturer: vehicle.make,
+  model: vehicle.model || undefined,
+  vehicleIdentificationNumber: formattedReg,
+  color: vehicle.colour,
+  fuelType: vehicle.fuelType,
+  vehicleEngine: vehicle.engineCapacity ? {
+    '@type': 'EngineSpecification',
+    engineDisplacement: {
+      '@type': 'QuantitativeValue',
+      value: vehicle.engineCapacity,
+      unitCode: 'CMQ'
+    }
+  } : undefined,
+  dateVehicleFirstRegistered: vehicle.monthOfFirstRegistration || undefined,
+  modelDate: vehicle.yearOfManufacture?.toString()
+} : null;
 ---
 
-<Layout title={`${formatReg(reg)} - CarScratch`}>
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonicalPath={`/lookup/${reg.toUpperCase()}`}
+  noIndex={!!vehicleInfo.error}
+>
+  {vehicleSchema && (
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(vehicleSchema)} />
+  )}
   <div class="max-w-5xl mx-auto px-4 py-8">
     <!-- Search form at top -->
     <div class="mb-8">
