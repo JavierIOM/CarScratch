@@ -143,6 +143,16 @@ For Isle of Man vehicles, enter a Manx plate (e.g., PMN 147 E, MAN 123).
 - **Progress Indicator** - Animated progress bar during vehicle lookups
 - **Custom 404 Page** - Friendly error page with auto-redirect to home
 - **Responsive Design** - Works on desktop, tablet, and mobile devices
+- **Motorcycle Support** - Engine sizes under 1000cc display as cc (e.g., "660cc") rather than litres
+
+## SEO
+
+- Full Open Graph and Twitter Card meta tags for social sharing
+- JSON-LD structured data (WebSite, Organization, Vehicle schemas)
+- Dynamic sitemap at `/sitemap.xml`
+- robots.txt with crawler directives
+- Canonical URLs on all pages
+- PWA manifest for app-like experience
 
 ## License
 
@@ -154,4 +164,4 @@ Built by [JavierIOM](https://github.com/JavierIOM)
 
 ---
 
-**Current Version:** v1.1.0
+**Current Version:** v1.2.0
