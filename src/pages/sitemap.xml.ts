@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 
-const SITE_URL = 'https://carscratch.netlify.app';
+const SITE_URL = 'https://carscratch.uk';
 
 const pages = [
   { url: '/', priority: '1.0', changefreq: 'daily' },
