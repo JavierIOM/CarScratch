@@ -273,7 +273,7 @@ export default async function ({ page }) {
     let result;
     try {
       result = await response.json();
-    } catch {
+    } catch (_e) {
       console.error('[Insurance] Failed to parse Browserless response');
       return null;
     }

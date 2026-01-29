@@ -152,6 +152,17 @@ async function getGovImSession(): Promise<{ cookies: string; csrfToken: string }
 export async function scrapeIOMVehicle(
   registration: string
 ): Promise<IOMVehicleData | null> {
+  try {
+    return await _scrapeIOMVehicleInner(registration);
+  } catch (err) {
+    console.error('[IoM] Top-level crash caught:', err);
+    return null;
+  }
+}
+
+async function _scrapeIOMVehicleInner(
+  registration: string
+): Promise<IOMVehicleData | null> {
   const normalized = registration.toUpperCase().replace(/\s/g, '');
 
   // Check cache
