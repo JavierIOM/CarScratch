@@ -4,3 +4,5 @@
 
 [functions]
   directory = ".netlify/functions-internal"
+  external_node_modules = ["cheerio"]
+  node_bundler = "esbuild"

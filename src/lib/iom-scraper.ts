@@ -44,7 +44,7 @@ function extractCookies(res: Response): string[] {
       if (values && values.length > 0) {
         return values.map(sc => sc.split(';')[0]).filter(Boolean);
       }
-    } catch { /* fall through */ }
+    } catch (_e) { /* fall through */ }
   }
 
   // Fallback: parse the raw 'set-cookie' header
@@ -85,7 +85,17 @@ async function fetchWithCookies(
   let currentUrl = url;
 
   for (let i = 0; i < maxRedirects; i++) {
-    const res = await fetch(currentUrl, { headers: headers(), redirect: 'manual' });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    let res: Response;
+    try {
+      res = await fetch(currentUrl, { headers: headers(), redirect: 'manual', signal: controller.signal });
+    } catch (err) {
+      console.error(`[IoM] Fetch failed at hop ${i}: ${err}`);
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
     addCookies(res);
 
     console.log(`[IoM] ${i}: ${res.status} ${currentUrl} (cookies: ${cookieJar.size})`);
@@ -170,18 +180,29 @@ export async function scrapeIOMVehicle(
       __RequestVerificationToken: session.csrfToken,
     });
 
-    const searchRes = await fetch(GOV_IM_URL, {
-      method: 'POST',
-      headers: {
-        'User-Agent': USER_AGENT,
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-GB,en;q=0.9',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Referer': GOV_IM_URL,
-        'Cookie': session.cookies,
-      },
-      body: body.toString(),
-    });
+    const postController = new AbortController();
+    const postTimeout = setTimeout(() => postController.abort(), 8000);
+    let searchRes: Response;
+    try {
+      searchRes = await fetch(GOV_IM_URL, {
+        method: 'POST',
+        headers: {
+          'User-Agent': USER_AGENT,
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-GB,en;q=0.9',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Referer': GOV_IM_URL,
+          'Cookie': session.cookies,
+        },
+        body: body.toString(),
+        signal: postController.signal,
+      });
+    } catch (err) {
+      console.error(`[IoM] POST fetch failed: ${err}`);
+      return null;
+    } finally {
+      clearTimeout(postTimeout);
+    }
 
     if (!searchRes.ok) {
       console.error(`[IoM] Search POST returned ${searchRes.status}`);
