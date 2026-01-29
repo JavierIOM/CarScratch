@@ -17,7 +17,6 @@ export interface IOMVehicleData {
   taxStatus?: string;
   taxExpiryDate?: string;
   scrapedAt?: string;
-  // Debug info
   _debug?: {
     url?: string;
     htmlPreview?: string;
@@ -27,11 +26,127 @@ export interface IOMVehicleData {
 
 // Cache for IoM lookups
 const iomCache = new Map<string, { data: IOMVehicleData | null; timestamp: number }>();
-const IOM_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours (IoM data changes rarely)
+const IOM_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
+
+const GOV_IM_URL = 'https://services.gov.im/service/VehicleSearch';
+const GOV_IM_LAUNCH_URL = 'https://services.gov.im/onlineservices/launchonlineservices.iom';
+const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
 /**
- * Scrape vehicle data from the Isle of Man government website using Browserless
- * The gov.im site uses a form-based search, so we need to interact with the page
+ * Get a session from gov.im by following the redirect dance.
+ * Returns the session cookies and CSRF token needed for the search POST.
+ */
+async function getGovImSession(): Promise<{ cookies: string; csrfToken: string } | null> {
+  try {
+    // Step 1: Hit the launch URL to get session cookies
+    const launchRes = await fetch(`${GOV_IM_LAUNCH_URL}?redirect=/service/VehicleSearch`, {
+      headers: {
+        'User-Agent': USER_AGENT,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-GB,en;q=0.9',
+      },
+      redirect: 'manual',
+    });
+
+    // Collect cookies from this response
+    const cookies: string[] = [];
+    const setCookieHeaders = launchRes.headers.getSetCookie?.() ?? [];
+    for (const sc of setCookieHeaders) {
+      const nameValue = sc.split(';')[0];
+      if (nameValue) cookies.push(nameValue);
+    }
+
+    console.log(`[IoM] Launch response: ${launchRes.status}, cookies: ${cookies.length}`);
+
+    // Step 2: Follow redirect to the search page with cookies
+    const searchRes = await fetch(GOV_IM_URL, {
+      headers: {
+        'User-Agent': USER_AGENT,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-GB,en;q=0.9',
+        'Cookie': cookies.join('; '),
+      },
+      redirect: 'manual',
+    });
+
+    // If we get another redirect, follow it and collect more cookies
+    const moreCookies = searchRes.headers.getSetCookie?.() ?? [];
+    for (const sc of moreCookies) {
+      const nameValue = sc.split(';')[0];
+      if (nameValue) cookies.push(nameValue);
+    }
+
+    // We may need to follow another redirect
+    let html = '';
+    if (searchRes.status >= 300 && searchRes.status < 400) {
+      const location = searchRes.headers.get('location');
+      if (location) {
+        const fullUrl = location.startsWith('http') ? location : `https://services.gov.im${location}`;
+        const finalRes = await fetch(fullUrl, {
+          headers: {
+            'User-Agent': USER_AGENT,
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-GB,en;q=0.9',
+            'Cookie': cookies.join('; '),
+          },
+          redirect: 'manual',
+        });
+
+        const evenMoreCookies = finalRes.headers.getSetCookie?.() ?? [];
+        for (const sc of evenMoreCookies) {
+          const nameValue = sc.split(';')[0];
+          if (nameValue) cookies.push(nameValue);
+        }
+
+        // May need one more follow if still redirecting
+        if (finalRes.status >= 300 && finalRes.status < 400) {
+          const loc2 = finalRes.headers.get('location');
+          if (loc2) {
+            const fullUrl2 = loc2.startsWith('http') ? loc2 : `https://services.gov.im${loc2}`;
+            const res2 = await fetch(fullUrl2, {
+              headers: {
+                'User-Agent': USER_AGENT,
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-GB,en;q=0.9',
+                'Cookie': cookies.join('; '),
+              },
+            });
+            const moreCk = res2.headers.getSetCookie?.() ?? [];
+            for (const sc of moreCk) {
+              const nameValue = sc.split(';')[0];
+              if (nameValue) cookies.push(nameValue);
+            }
+            html = await res2.text();
+          }
+        } else {
+          html = await finalRes.text();
+        }
+      }
+    } else {
+      html = await searchRes.text();
+    }
+
+    // Extract CSRF token from the HTML
+    const tokenMatch = html.match(/name="__RequestVerificationToken"[^>]*value="([^"]+)"/);
+    if (!tokenMatch) {
+      console.error('[IoM] Could not find CSRF token in page HTML');
+      console.error('[IoM] HTML preview:', html.substring(0, 500));
+      return null;
+    }
+
+    return {
+      cookies: cookies.join('; '),
+      csrfToken: tokenMatch[1],
+    };
+  } catch (error) {
+    console.error('[IoM] Failed to get session:', error);
+    return null;
+  }
+}
+
+/**
+ * Scrape vehicle data from the Isle of Man government website using direct HTTP requests.
+ * No headless browser needed - just follows the session/redirect flow and POSTs the form.
  */
 export async function scrapeIOMVehicle(
   registration: string
@@ -44,237 +159,63 @@ export async function scrapeIOMVehicle(
     return cached.data;
   }
 
-  const browserlessApiKey = import.meta.env.BROWSERLESS_API_KEY;
-
-  if (!browserlessApiKey) {
-    console.warn('BROWSERLESS_API_KEY not configured, skipping IoM lookup');
-    return null;
-  }
-
   try {
-    // Try the registration without any separators - gov.im may expect plain format
     const formattedReg = registration.toUpperCase().replace(/[\s-]+/g, '');
 
-    // Use Browserless /function API to interact with the form
-    // This runs Puppeteer code that fills in and submits the search form
-    // Using stealth techniques to avoid bot detection
-    const puppeteerCode = `
-export default async function ({ page }) {
-  try {
-    const searchReg = "${formattedReg}";
+    console.log(`[IoM] Looking up ${formattedReg}`);
 
-    // Set a realistic user agent
-  await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    // Get session cookies and CSRF token
+    const session = await getGovImSession();
+    if (!session) {
+      console.error('[IoM] Could not establish session with gov.im');
+      return null;
+    }
 
-  // Set realistic viewport
-  await page.setViewport({ width: 1920, height: 1080 });
+    console.log(`[IoM] Got session, CSRF token length: ${session.csrfToken.length}`);
 
-  // Override webdriver detection
-  await page.evaluateOnNewDocument(() => {
-    Object.defineProperty(navigator, 'webdriver', { get: () => false });
-    Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
-    Object.defineProperty(navigator, 'languages', { get: () => ['en-GB', 'en'] });
-    window.chrome = { runtime: {} };
-  });
+    // POST the search form
+    const body = new URLSearchParams({
+      RegMarkNo: formattedReg,
+      __RequestVerificationToken: session.csrfToken,
+    });
 
-  // Go to the vehicle search page
-  await page.goto('https://services.gov.im/service/VehicleSearch', {
-    waitUntil: 'networkidle2',
-    timeout: 30000
-  });
-
-  // Wait a bit for any JS to run
-  await new Promise(r => setTimeout(r, 1000));
-
-  // Wait for page to load
-  await page.waitForSelector('input', { timeout: 10000 }).catch(() => {});
-
-  // Debug: Get all form info
-  const formInfo = await page.evaluate(() => {
-    const inputs = Array.from(document.querySelectorAll('input'));
-    const buttons = Array.from(document.querySelectorAll('button, input[type="submit"]'));
-    return {
-      inputs: inputs.map(i => ({
-        type: i.type,
-        name: i.name,
-        id: i.id,
-        placeholder: i.placeholder,
-        className: i.className
-      })),
-      buttons: buttons.map(b => ({
-        type: b.type,
-        text: b.textContent?.trim(),
-        className: b.className
-      }))
-    };
-  });
-
-  // Find the registration input using evaluate (more reliable than page.$)
-  const inputExists = await page.evaluate(() => !!document.querySelector('#RegMarkNo'));
-
-  if (!inputExists) {
-    const html = await page.content();
-    return {
-      data: {
-        error: 'Could not find #RegMarkNo input via evaluate',
-        html: html.substring(0, 2000),
-        formInfo: JSON.stringify(formInfo)
+    const searchRes = await fetch(GOV_IM_URL, {
+      method: 'POST',
+      headers: {
+        'User-Agent': USER_AGENT,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-GB,en;q=0.9',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Referer': GOV_IM_URL,
+        'Cookie': session.cookies,
       },
-      type: 'application/json'
-    };
-  }
+      body: body.toString(),
+    });
 
-  // Type the registration and submit using evaluate
-  await page.evaluate((reg) => {
-    const input = document.querySelector('#RegMarkNo');
-    if (input) {
-      input.value = reg;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-  }, searchReg);
-
-  // Small delay after typing
-  await new Promise(r => setTimeout(r, 500));
-
-  // Submit the form via evaluate
-  const submitResult = await page.evaluate(() => {
-    const btn = document.querySelector('button[type="submit"]');
-    if (btn) {
-      btn.click();
-      return 'clicked';
-    }
-    const form = document.querySelector('form');
-    if (form) {
-      form.submit();
-      return 'submitted';
-    }
-    return 'no_element';
-  });
-
-  // Wait for navigation/result
-  await new Promise(r => setTimeout(r, 5000));
-
-  // Get final state
-  const html = await page.content();
-  const url = page.url();
-
-  // Check if we got results
-  const hasResults = html.includes('Make') || html.includes('NISSAN') || html.includes('Vehicle Details');
-  const contentChanged = !html.includes('Enter a registration');
-
-  // Capture context around "Make" to understand structure
-  let makeContext = '';
-  const makeIndex = html.indexOf('<th>Make</th>');
-  if (makeIndex !== -1) {
-    // Capture more after Make to include the value
-    makeContext = html.substring(makeIndex, Math.min(html.length, makeIndex + 100));
-  } else {
-    // Fallback: search for just "Make"
-    const altIndex = html.indexOf('Make');
-    if (altIndex !== -1) {
-      makeContext = 'altSearch:' + html.substring(altIndex, Math.min(html.length, altIndex + 100));
-    }
-  }
-
-    return {
-      data: {
-        html,
-        url,
-        formInfo: JSON.stringify(formInfo),
-        inputValue: searchReg,
-        submitResult,
-        contentChanged,
-        hasResults,
-        makeContext
-      },
-      type: 'application/json'
-    };
-  } catch (err) {
-    return {
-      data: {
-        error: 'Puppeteer error: ' + err.message,
-        stack: err.stack
-      },
-      type: 'application/json'
-    };
-  }
-}
-`;
-
-    // Use stealth flag to avoid bot detection
-    const response = await fetch(
-      `https://chrome.browserless.io/function?token=${browserlessApiKey}&stealth`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/javascript',
-        },
-        body: puppeteerCode,
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Browserless returned ${response.status}: ${errorText}`);
-      // Return debug data so we can see what went wrong
+    if (!searchRes.ok) {
+      console.error(`[IoM] Search POST returned ${searchRes.status}`);
       return {
         registrationNumber: registration,
         scrapedAt: new Date().toISOString(),
-        _debug: {
-          error: `Browserless HTTP ${response.status}: ${errorText.substring(0, 200)}`,
-        },
+        _debug: { error: `gov.im returned HTTP ${searchRes.status}` },
       };
     }
 
-    let result;
-    try {
-      result = await response.json();
-    } catch (jsonErr) {
-      const text = await response.text();
-      return {
-        registrationNumber: registration,
-        scrapedAt: new Date().toISOString(),
-        _debug: {
-          error: 'Failed to parse Browserless response as JSON',
-          htmlPreview: text.substring(0, 500),
-        },
-      };
-    }
+    const html = await searchRes.text();
+    console.log(`[IoM] Got response, length: ${html.length}`);
 
-    // The function returns { data: { html, url } } or { data: { error, html } }
-    const respData = result.data || result;
-
-    if (respData.error) {
-      console.error('Browserless function error:', respData.error);
-      return {
-        registrationNumber: registration,
-        scrapedAt: new Date().toISOString(),
-        _debug: {
-          error: respData.error + (respData.formInfo ? ' Forms: ' + respData.formInfo : ''),
-          htmlPreview: respData.html?.substring(0, 500),
-        },
-      };
-    }
-
-    const html = respData.html || '';
-    const $ = cheerio.load(html);
-
-    console.log('IoM search URL:', respData.url);
-    console.log('IoM HTML preview:', html.substring(0, 500));
-    console.log('IoM makeContext:', respData.makeContext);
-
-    // Check for error pages
+    // Check for error/not-found
     if (
       html.includes('No vehicle found') ||
       html.includes('was rejected') ||
-      html.includes('Vehicle not found')
+      html.includes('Vehicle not found') ||
+      html.includes('The requested URL was rejected')
     ) {
       const errorData: IOMVehicleData = {
         registrationNumber: registration,
         scrapedAt: new Date().toISOString(),
         _debug: {
-          url: respData.url,
-          error: 'Gov.im returned no vehicle found',
+          error: 'Vehicle not found or request rejected',
           htmlPreview: html.substring(0, 500),
         },
       };
@@ -282,137 +223,69 @@ export default async function ({ page }) {
       return errorData;
     }
 
-    // Parse the vehicle data from the table
+    // Parse with Cheerio
+    const $ = cheerio.load(html);
+
     const vehicleData: IOMVehicleData = {
       registrationNumber: registration,
       scrapedAt: new Date().toISOString(),
-      _debug: {
-        url: respData.url,
-        htmlPreview: html.substring(0, 500),
-        error: [
-          respData.inputValue ? 'Input: ' + respData.inputValue : null,
-          respData.submitResult ? 'Submit: ' + respData.submitResult : null,
-          respData.hasResults !== undefined ? 'HasResults: ' + respData.hasResults : null,
-          respData.makeContext ? 'Context: ' + respData.makeContext : null,
-        ].filter(Boolean).join(' | '),
-      },
     };
 
-    // The IoM site uses a table with rows like:
-    // <tr><td>Make</td><td>NISSAN</td></tr>
-    // Or it might use a definition list or other structure
-
-    // Helper to find value by label - tries multiple HTML patterns
+    // gov.im uses: <th>Label</th>\n<td>Value</td>
     const findValue = (label: string): string | undefined => {
-      // Pattern 0: Exact gov.im format: <th>Label</th> <td>VALUE</td>
-      // Note: there's often a space or whitespace between </th> and <td>
-      const govImMatch = html.match(new RegExp(`<th>${label}</th>\\s*<td>([^<]+)</td>`, 'i'));
-      if (govImMatch && govImMatch[1].trim()) {
-        return govImMatch[1].trim();
+      // Cheerio approach - cleanest for this table structure
+      const th = $(`th:contains("${label}")`).first();
+      if (th.length) {
+        const td = th.next('td');
+        if (td.length && td.text().trim()) {
+          return td.text().trim();
+        }
       }
 
-      // Pattern 1: th/td table with attributes (e.g., <th class="...">Make</th><td>NISSAN</td>)
-      const thMatch = html.match(new RegExp(`<th[^>]*>\\s*${label}\\s*</th>\\s*<td[^>]*>([^<]+)</td>`, 'i'));
-      if (thMatch && thMatch[1].trim()) {
-        return thMatch[1].trim();
-      }
-
-      // Pattern 2: td/td table (e.g., <td>Make</td><td>NISSAN</td>)
-      const tdMatch = html.match(new RegExp(`<td[^>]*>\\s*${label}\\s*</td>\\s*<td[^>]*>([^<]+)</td>`, 'i'));
-      if (tdMatch && tdMatch[1].trim()) {
-        return tdMatch[1].trim();
-      }
-
-      // Pattern 3: label after closing tag (e.g., >Make</th><td>NISSAN</td>)
-      const afterTagMatch = html.match(new RegExp(`>${label}</[^>]+>\\s*<[^>]+>([^<]+)<`, 'i'));
-      if (afterTagMatch && afterTagMatch[1].trim()) {
-        return afterTagMatch[1].trim();
-      }
-
-      // Pattern 4: Definition list
-      const dlMatch = html.match(new RegExp(`<dt[^>]*>\\s*${label}\\s*</dt>\\s*<dd[^>]*>([^<]+)</dd>`, 'i'));
-      if (dlMatch && dlMatch[1].trim()) {
-        return dlMatch[1].trim();
-      }
-
-      // Pattern 5: Generic colon format (e.g., Make: NISSAN)
-      const colonMatch = html.match(new RegExp(`${label}\\s*:\\s*([^<\\n,]+)`, 'i'));
-      if (colonMatch && colonMatch[1].trim()) {
-        return colonMatch[1].trim();
-      }
-
-      // Try Cheerio as fallback
-      const thCell = $(`th:contains("${label}")`).first().next('td');
-      if (thCell.length && thCell.text().trim()) {
-        return thCell.text().trim();
-      }
-
-      const tdCell = $(`td:contains("${label}")`).first().next('td');
-      if (tdCell.length && tdCell.text().trim()) {
-        return tdCell.text().trim();
+      // Regex fallback
+      const match = html.match(new RegExp(`<th[^>]*>[^<]*${label}[^<]*</th>\\s*<td[^>]*>\\s*([^<]+)`, 'i'));
+      if (match && match[1].trim()) {
+        return match[1].trim();
       }
 
       return undefined;
     };
 
-    // Debug: Try direct regex on html first
-    const directMakeMatch = html.match(/<th>Make<\/th>\s*<td>([^<]+)<\/td>/i);
-
-    // Always add debug info about regex result
-    vehicleData._debug!.error = (vehicleData._debug?.error || '') +
-      ' | RegexResult: ' + (directMakeMatch ? 'matched=' + directMakeMatch[1] : 'no match');
-
-    if (directMakeMatch) {
-      vehicleData.make = directMakeMatch[1].trim();
-    }
-
-    // Fall back to findValue
-    if (!vehicleData.make) {
-      vehicleData.make = findValue('Make');
-    }
-    vehicleData.model = findValue('Model') && !findValue('Model')?.includes('Variant')
-      ? findValue('Model')
-      : undefined;
+    vehicleData.make = findValue('Make');
+    const modelVal = findValue('Model');
+    vehicleData.model = modelVal && !modelVal.includes('Variant') ? modelVal : undefined;
     vehicleData.modelVariant = findValue('Model Variant') || findValue('Variant');
     vehicleData.category = findValue('Category');
     vehicleData.colour = findValue('Colour') || findValue('Color');
     vehicleData.fuelType = findValue('Fuel');
 
-    // Cubic capacity
     const ccStr = findValue('Cubic Capacity');
     if (ccStr) {
       const ccMatch = ccStr.match(/(\d+)/);
-      if (ccMatch) {
-        vehicleData.cubicCapacity = parseInt(ccMatch[1], 10);
-      }
+      if (ccMatch) vehicleData.cubicCapacity = parseInt(ccMatch[1], 10);
     }
 
-    // CO2
     const co2Str = findValue('CO2 Emission');
     if (co2Str) {
       const co2Match = co2Str.match(/(\d+)/);
-      if (co2Match) {
-        vehicleData.co2Emissions = parseInt(co2Match[1], 10);
-      }
+      if (co2Match) vehicleData.co2Emissions = parseInt(co2Match[1], 10);
     }
 
-    // Dates
     vehicleData.dateOfFirstRegistration = findValue('Date of First Registration');
     vehicleData.previousUKRegistration = findValue('Previous Registration Number');
     vehicleData.dateOfFirstRegistrationIOM = findValue('Date of First Registration on IOM');
     vehicleData.wheelPlan = findValue('Wheel Plan');
-
-    // Tax status
-    const taxStatusStr = findValue('Status of Vehicle Licence');
-    vehicleData.taxStatus = taxStatusStr;
+    vehicleData.taxStatus = findValue('Status of Vehicle Licence');
     vehicleData.taxExpiryDate = findValue('Expiry Date of Vehicle Licence');
+
+    console.log(`[IoM] Parsed: ${vehicleData.make} ${vehicleData.modelVariant || vehicleData.model || ''}`);
 
     // Cache the result
     iomCache.set(normalized, { data: vehicleData, timestamp: Date.now() });
 
     return vehicleData;
   } catch (error) {
-    console.error('Error scraping IoM vehicle:', error);
+    console.error('[IoM] Error scraping vehicle:', error);
     return null;
   }
 }
@@ -421,7 +294,6 @@ export default async function ({ page }) {
  * Convert IoM vehicle data to our standard VehicleData format
  */
 export function iomToVehicleData(iom: IOMVehicleData): import('./types').VehicleData {
-  // Parse tax status
   let taxStatus: 'Taxed' | 'SORN' | 'Untaxed' | 'Not Taxed for on Road Use' = 'Untaxed';
   if (iom.taxStatus) {
     const lower = iom.taxStatus.toLowerCase();
@@ -432,7 +304,6 @@ export function iomToVehicleData(iom: IOMVehicleData): import('./types').Vehicle
     }
   }
 
-  // Parse year from first registration date
   let yearOfManufacture = 0;
   if (iom.dateOfFirstRegistration) {
     const yearMatch = iom.dateOfFirstRegistration.match(/(\d{4})/);
@@ -452,7 +323,7 @@ export function iomToVehicleData(iom: IOMVehicleData): import('./types').Vehicle
     yearOfManufacture,
     taxStatus,
     taxDueDate: iom.taxExpiryDate,
-    motStatus: 'No details held by DVLA', // IoM doesn't have MOT in same way
+    motStatus: 'No details held by DVLA',
     wheelplan: iom.wheelPlan,
   };
 }
