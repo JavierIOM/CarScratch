@@ -21,7 +21,8 @@
       "WebFetch(domain:www.mib.org.uk)",
       "WebFetch(domain:ownvehicle.askmid.com)",
       "WebFetch(domain:www.askmid.com)",
-      "WebFetch(domain:enquiry.navigate.mib.org.uk)"
+      "WebFetch(domain:enquiry.navigate.mib.org.uk)",
+      "Bash(python:*)"
     ]
   }
 }
