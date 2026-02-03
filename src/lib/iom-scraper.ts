@@ -218,50 +218,29 @@ export async function scrapeIOMVehicle(
       return null;
     }
 
-    // Parse with regex only - skip Cheerio entirely to avoid crashes
+    // DIAGNOSTIC: Just try parsing Make to see if regex crashes
+    console.log('[IoM] About to regex parse...');
+
+    let make: string | undefined;
+    try {
+      const makeMatch = html.match(/<th[^>]*>Make<\/th>\s*<td[^>]*>([^<]+)<\/td>/i);
+      make = makeMatch ? makeMatch[1].trim() : undefined;
+      console.log(`[IoM] Make = ${make}`);
+    } catch (regexErr) {
+      console.error('[IoM] Regex crashed:', regexErr);
+    }
+
     const vehicleData: IOMVehicleData = {
       registrationNumber: registration,
       scrapedAt: new Date().toISOString(),
+      make,
     };
 
-    // Simple regex parser for gov.im table format: <th>Label</th>\n<td>Value</td>
-    const findValue = (label: string): string | undefined => {
-      const regex = new RegExp(`<th[^>]*>[^<]*${label}[^<]*</th>\\s*<td[^>]*>([^<]+)</td>`, 'i');
-      const match = html.match(regex);
-      return match ? match[1].trim() : undefined;
-    };
+    console.log('[IoM] Created vehicleData object');
 
-    vehicleData.make = findValue('Make');
-    const modelVal = findValue('Model');
-    vehicleData.model = modelVal && !modelVal.includes('Variant') ? modelVal : undefined;
-    vehicleData.modelVariant = findValue('Model Variant') || findValue('Variant');
-    vehicleData.category = findValue('Category');
-    vehicleData.colour = findValue('Colour') || findValue('Color');
-    vehicleData.fuelType = findValue('Fuel');
-
-    const ccStr = findValue('Cubic Capacity');
-    if (ccStr) {
-      const ccMatch = ccStr.match(/(\d+)/);
-      if (ccMatch) vehicleData.cubicCapacity = parseInt(ccMatch[1], 10);
-    }
-
-    const co2Str = findValue('CO2 Emission');
-    if (co2Str) {
-      const co2Match = co2Str.match(/(\d+)/);
-      if (co2Match) vehicleData.co2Emissions = parseInt(co2Match[1], 10);
-    }
-
-    vehicleData.dateOfFirstRegistration = findValue('Date of First Registration');
-    vehicleData.previousUKRegistration = findValue('Previous Registration Number');
-    vehicleData.dateOfFirstRegistrationIOM = findValue('Date of First Registration on IOM');
-    vehicleData.wheelPlan = findValue('Wheel Plan');
-    vehicleData.taxStatus = findValue('Status of Vehicle Licence');
-    vehicleData.taxExpiryDate = findValue('Expiry Date of Vehicle Licence');
-
-    console.log(`[IoM] Parsed: ${vehicleData.make} ${vehicleData.modelVariant || vehicleData.model || ''}`);
-
-    // Cache the result
+    // Cache and return
     iomCache.set(normalized, { data: vehicleData, timestamp: Date.now() });
+    console.log('[IoM] Cached result');
 
     return vehicleData;
   } catch (err) {
