@@ -149,11 +149,9 @@ async function getIOMVehicleInfo(
   originalReg: string
 ): Promise<VehicleInfo> {
   try {
-    // Fetch IoM data and insurance in parallel
-    const [iomData, insuranceResult] = await Promise.all([
-      scrapeIOMVehicle(originalReg),
-      checkInsurance(originalReg),
-    ]);
+    // Fetch IoM data - skip insurance lookup for now (causes timeouts)
+    const iomData = await scrapeIOMVehicle(originalReg);
+    const insuranceResult = null;
 
     if (!iomData) {
       return {
