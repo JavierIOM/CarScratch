@@ -11,7 +11,7 @@ const { extras } = Astro.props;
 const hasPerformance = extras.bhp || extras.topSpeed || extras.zeroToSixty;
 const hasCompliance = extras.ulezCompliant !== undefined || extras.cazCompliant !== undefined || extras.insuranceGroup;
 const hasMarket = extras.previousPrice || extras.previousMileage;
-const hasIoM = extras.previousUKRegistration || extras.dateOfFirstRegistrationIOM || extras.modelVariant || extras.category;
+const hasIoM = extras.previousUKRegistration || extras.dateOfFirstRegistrationIOM || extras.modelVariant || extras.category || extras.iomModel || extras.wheelPlan;
 const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasIoM || extras.bodyStyle || extras.registrationLocation;
 ---
 
@@ -138,6 +138,20 @@ const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasIoM || ext
         <div>
           <dt class="text-sm text-slate-500 mb-1">Category</dt>
           <dd class="font-medium">{extras.category}</dd>
+        </div>
+      )}
+
+      {extras.iomModel && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Model</dt>
+          <dd class="font-medium">{extras.iomModel}</dd>
+        </div>
+      )}
+
+      {extras.wheelPlan && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Wheel Plan</dt>
+          <dd class="font-medium">{extras.wheelPlan}</dd>
         </div>
       )}
     </div>

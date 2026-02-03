@@ -254,18 +254,27 @@ export async function scrapeIOMVehicle(
       };
     }
 
+    // Parse numeric fields
+    const ccStr = findValue('Cubic Capacity');
+    const co2Str = findValue('CO2 Emission');
+
     const vehicleData: IOMVehicleData = {
       registrationNumber: registration,
       scrapedAt: new Date().toISOString(),
       make,
       model: modelVal && !modelVal.includes('Variant') ? modelVal : undefined,
       modelVariant: findValue('Model Variant'),
+      category: findValue('Category'),
       colour: findValue('Colour'),
+      cubicCapacity: ccStr ? parseInt(ccStr, 10) : undefined,
       fuelType: findValue('Fuel'),
-      taxStatus: findValue('Status of Vehicle Licence'),
-      taxExpiryDate: findValue('Expiry Date of Vehicle Licence'),
+      co2Emissions: co2Str ? parseFloat(co2Str) : undefined,
       dateOfFirstRegistration: findValue('Date of First Registration'),
       previousUKRegistration: findValue('Previous Registration Number'),
+      dateOfFirstRegistrationIOM: findValue('Date of First Registration on IOM'),
+      wheelPlan: findValue('Wheel Plan'),
+      taxStatus: findValue('Status of Vehicle Licence'),
+      taxExpiryDate: findValue('Expiry Date of Vehicle Licence'),
     };
 
     console.log('[IoM] Created vehicleData object');

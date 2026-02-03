@@ -191,8 +191,10 @@ async function getIOMVehicleInfo(
     const extras: ScrapedExtras = {
       previousUKRegistration: sanitizeUKRegistration(iomData.previousUKRegistration),
       dateOfFirstRegistrationIOM: sanitizeScrapedString(iomData.dateOfFirstRegistrationIOM),
+      iomModel: sanitizeScrapedString(iomData.model, 50),
       modelVariant: sanitizeScrapedString(iomData.modelVariant),
       category: sanitizeScrapedString(iomData.category, 20),
+      wheelPlan: sanitizeScrapedString(iomData.wheelPlan, 30),
       sources: ['gov.im'],
     };
 

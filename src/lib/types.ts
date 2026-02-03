@@ -70,8 +70,10 @@ export interface ScrapedExtras {
   // Isle of Man specific
   previousUKRegistration?: string;
   dateOfFirstRegistrationIOM?: string;
+  iomModel?: string;
   modelVariant?: string;
   category?: string;
+  wheelPlan?: string;
 
   // Source tracking
   sources?: string[];
