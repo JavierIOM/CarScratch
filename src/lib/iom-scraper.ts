@@ -82,9 +82,9 @@ async function searchGovIm(registration: string): Promise<{ html: string } | nul
     let currentUrl = GOV_IM_URL;
     let html = '';
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 4; i++) {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
+      const timeout = setTimeout(() => controller.abort(), 3000);
       let res: Response;
       try {
         res = await fetch(currentUrl, {
@@ -99,7 +99,6 @@ async function searchGovIm(registration: string): Promise<{ html: string } | nul
         clearTimeout(timeout);
       }
       addCookies(res);
-      console.log(`[IoM] GET ${i}: ${res.status} (cookies: ${cookieJar.size})`);
 
       if (res.status >= 300 && res.status < 400) {
         const location = res.headers.get('location');
@@ -125,7 +124,6 @@ async function searchGovIm(registration: string): Promise<{ html: string } | nul
       return null;
     }
     const csrfToken = tokenMatch[1];
-    console.log(`[IoM] Got CSRF token (${csrfToken.length} chars), cookies: ${[...cookieJar.keys()].join(', ')}`);
 
     // Step 2: POST the search (same cookie jar)
     const formData = new URLSearchParams({
@@ -134,7 +132,7 @@ async function searchGovIm(registration: string): Promise<{ html: string } | nul
     });
 
     const postController = new AbortController();
-    const postTimeout = setTimeout(() => postController.abort(), 5000);
+    const postTimeout = setTimeout(() => postController.abort(), 3000);
     let postRes: Response;
     try {
       postRes = await fetch(GOV_IM_URL, {
@@ -156,7 +154,6 @@ async function searchGovIm(registration: string): Promise<{ html: string } | nul
     }
 
     addCookies(postRes);
-    console.log(`[IoM] POST: ${postRes.status}`);
 
     if (!postRes.ok) {
       console.error(`[IoM] POST failed: ${postRes.status}`);
@@ -164,8 +161,6 @@ async function searchGovIm(registration: string): Promise<{ html: string } | nul
     }
 
     const resultHtml = await postRes.text();
-    console.log(`[IoM] Result HTML length: ${resultHtml.length}`);
-
     return { html: resultHtml };
   } catch (error) {
     console.error('[IoM] Search failed:', error);
@@ -183,7 +178,6 @@ export async function scrapeIOMVehicle(
   try {
     const formattedReg = registration.toUpperCase().replace(/[\s-]+/g, '');
     const normalized = registration.toUpperCase().replace(/\s/g, '');
-    console.log(`[IoM] Looking up ${formattedReg}`);
 
     // Check cache
     const cached = iomCache.get(normalized);
@@ -194,7 +188,6 @@ export async function scrapeIOMVehicle(
     // Perform search (handles session + POST in one cookie context)
     const result = await searchGovIm(formattedReg);
     if (!result) {
-      console.log('[IoM] Search failed');
       return null;
     }
 
@@ -207,15 +200,7 @@ export async function scrapeIOMVehicle(
       html.includes('Vehicle not found') ||
       html.includes('The requested URL was rejected')
     ) {
-      console.log('[IoM] Vehicle not found in response');
       return null;
-    }
-
-    // Log a snippet of the HTML around "Make" for debugging
-    const makeIndex = html.indexOf('Make');
-    console.log(`[IoM] Make index: ${makeIndex}`);
-    if (makeIndex > 0) {
-      console.log(`[IoM] HTML around Make: ${html.substring(makeIndex - 20, makeIndex + 100)}`);
     }
 
     // Parse all fields - use flexible regex that handles whitespace/newlines
@@ -235,21 +220,16 @@ export async function scrapeIOMVehicle(
     };
 
     const make = findValue('Make');
-    console.log(`[IoM] Make = ${make}`);
-
     const modelVal = findValue('Model');
 
     // If make not found, return debug info
     if (!make) {
-      const debugHtml = makeIndex > 0
-        ? html.substring(makeIndex - 50, makeIndex + 200)
-        : html.substring(0, 500);
       return {
         registrationNumber: registration,
         scrapedAt: new Date().toISOString(),
         _debug: {
-          error: `Make not found. Index=${makeIndex}, HTML length=${html.length}`,
-          htmlPreview: debugHtml,
+          error: `Make not found. HTML length=${html.length}`,
+          htmlPreview: html.substring(0, 500),
         },
       };
     }
@@ -277,12 +257,8 @@ export async function scrapeIOMVehicle(
       taxExpiryDate: findValue('Expiry Date of Vehicle Licence'),
     };
 
-    console.log('[IoM] Created vehicleData object');
-
     // Cache and return
     iomCache.set(normalized, { data: vehicleData, timestamp: Date.now() });
-    console.log('[IoM] Cached result');
-
     return vehicleData;
   } catch (err) {
     console.error('[IoM] Crash:', err);
