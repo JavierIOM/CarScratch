@@ -58,14 +58,10 @@ function extractCookies(res: Response): string[] {
 }
 
 /**
- * Follow redirects manually, collecting cookies at each hop.
- * Returns the final HTML body and all accumulated cookies.
+ * Perform the full search in one go - get session and POST in the same cookie context
  */
-async function fetchWithCookies(
-  url: string,
-  maxRedirects = 4,
-): Promise<{ html: string; cookies: string } | null> {
-  const cookieJar = new Map<string, string>(); // name -> name=value
+async function searchGovIm(registration: string): Promise<{ html: string } | null> {
+  const cookieJar = new Map<string, string>();
 
   const addCookies = (res: Response) => {
     for (const nv of extractCookies(res)) {
@@ -74,72 +70,105 @@ async function fetchWithCookies(
     }
   };
 
-  const headers = () => ({
+  const getHeaders = () => ({
     'User-Agent': USER_AGENT,
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Language': 'en-GB,en;q=0.9',
     'Cookie': [...cookieJar.values()].join('; '),
   });
 
-  let currentUrl = url;
+  try {
+    // Step 1: Get the search page (follow redirects, collect cookies)
+    let currentUrl = GOV_IM_URL;
+    let html = '';
 
-  for (let i = 0; i < maxRedirects; i++) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
-    let res: Response;
+    for (let i = 0; i < 5; i++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      let res: Response;
+      try {
+        res = await fetch(currentUrl, {
+          headers: getHeaders(),
+          redirect: 'manual',
+          signal: controller.signal,
+        });
+      } catch (err) {
+        console.error(`[IoM] GET ${i} failed: ${err}`);
+        return null;
+      } finally {
+        clearTimeout(timeout);
+      }
+      addCookies(res);
+      console.log(`[IoM] GET ${i}: ${res.status} (cookies: ${cookieJar.size})`);
+
+      if (res.status >= 300 && res.status < 400) {
+        const location = res.headers.get('location');
+        if (!location) break;
+        currentUrl = location.startsWith('http') ? location : `https://services.gov.im${location}`;
+        await res.text().catch(() => {});
+        continue;
+      }
+
+      html = await res.text();
+      break;
+    }
+
+    if (!html) {
+      console.error('[IoM] Failed to get search page');
+      return null;
+    }
+
+    // Extract CSRF token
+    const tokenMatch = html.match(/name="__RequestVerificationToken"[^>]*value="([^"]+)"/);
+    if (!tokenMatch) {
+      console.error('[IoM] No CSRF token found');
+      return null;
+    }
+    const csrfToken = tokenMatch[1];
+    console.log(`[IoM] Got CSRF token (${csrfToken.length} chars), cookies: ${[...cookieJar.keys()].join(', ')}`);
+
+    // Step 2: POST the search (same cookie jar)
+    const formData = new URLSearchParams({
+      RegMarkNo: registration,
+      __RequestVerificationToken: csrfToken,
+    });
+
+    const postController = new AbortController();
+    const postTimeout = setTimeout(() => postController.abort(), 5000);
+    let postRes: Response;
     try {
-      res = await fetch(currentUrl, { headers: headers(), redirect: 'manual', signal: controller.signal });
+      postRes = await fetch(GOV_IM_URL, {
+        method: 'POST',
+        headers: {
+          ...getHeaders(),
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Referer': GOV_IM_URL,
+        },
+        body: formData.toString(),
+        redirect: 'follow',
+        signal: postController.signal,
+      });
     } catch (err) {
-      console.error(`[IoM] Fetch failed at hop ${i}: ${err}`);
+      console.error(`[IoM] POST failed: ${err}`);
       return null;
     } finally {
-      clearTimeout(timeout);
-    }
-    addCookies(res);
-
-    console.log(`[IoM] ${i}: ${res.status} ${currentUrl} (cookies: ${cookieJar.size})`);
-
-    if (res.status >= 300 && res.status < 400) {
-      const location = res.headers.get('location');
-      if (!location) break;
-      currentUrl = location.startsWith('http') ? location : `https://services.gov.im${location}`;
-      // consume body to free connection
-      await res.text().catch(() => {});
-      continue;
+      clearTimeout(postTimeout);
     }
 
-    // Got a non-redirect response
-    const html = await res.text();
-    return { html, cookies: [...cookieJar.values()].join('; ') };
-  }
+    addCookies(postRes);
+    console.log(`[IoM] POST: ${postRes.status}`);
 
-  console.error('[IoM] Too many redirects or no final response');
-  return null;
-}
-
-/**
- * Get a session from gov.im by following the redirect dance.
- * Returns the session cookies and CSRF token needed for the search POST.
- */
-async function getGovImSession(): Promise<{ cookies: string; csrfToken: string } | null> {
-  try {
-    const result = await fetchWithCookies(GOV_IM_URL);
-    if (!result) return null;
-
-    // Extract CSRF token from the HTML
-    const tokenMatch = result.html.match(/name="__RequestVerificationToken"[^>]*value="([^"]+)"/);
-    if (!tokenMatch) {
-      console.error('[IoM] Could not find CSRF token in page HTML');
-      console.error('[IoM] HTML preview:', result.html.substring(0, 500));
+    if (!postRes.ok) {
+      console.error(`[IoM] POST failed: ${postRes.status}`);
       return null;
     }
 
-    return {
-      cookies: result.cookies,
-      csrfToken: tokenMatch[1],
-    };
+    const resultHtml = await postRes.text();
+    console.log(`[IoM] Result HTML length: ${resultHtml.length}`);
+
+    return { html: resultHtml };
   } catch (error) {
-    console.error('[IoM] Failed to get session:', error);
+    console.error('[IoM] Search failed:', error);
     return null;
   }
 }
@@ -162,50 +191,14 @@ export async function scrapeIOMVehicle(
       return cached.data;
     }
 
-    const session = await getGovImSession();
-    if (!session) {
-      console.log('[IoM] Session failed');
-      return null;
-    }
-    console.log(`[IoM] Got session, token: ${session.csrfToken.length} chars`);
-
-    // POST the search form
-    const body = new URLSearchParams({
-      RegMarkNo: formattedReg,
-      __RequestVerificationToken: session.csrfToken,
-    });
-
-    const postController = new AbortController();
-    const postTimeout = setTimeout(() => postController.abort(), 4000);
-    let searchRes: Response;
-    try {
-      searchRes = await fetch(GOV_IM_URL, {
-        method: 'POST',
-        headers: {
-          'User-Agent': USER_AGENT,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'en-GB,en;q=0.9',
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Referer': GOV_IM_URL,
-          'Cookie': session.cookies,
-        },
-        body: body.toString(),
-        signal: postController.signal,
-      });
-    } catch (err) {
-      console.error(`[IoM] POST failed: ${err}`);
-      return null;
-    } finally {
-      clearTimeout(postTimeout);
-    }
-
-    console.log(`[IoM] POST returned ${searchRes.status}`);
-    if (!searchRes.ok) {
+    // Perform search (handles session + POST in one cookie context)
+    const result = await searchGovIm(formattedReg);
+    if (!result) {
+      console.log('[IoM] Search failed');
       return null;
     }
 
-    const html = await searchRes.text();
-    console.log(`[IoM] HTML length ${html.length}`);
+    const html = result.html;
 
     // Check for error/not-found
     if (
