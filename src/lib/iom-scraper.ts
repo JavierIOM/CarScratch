@@ -1,4 +1,4 @@
-import * as cheerio from 'cheerio';
+// Cheerio removed - caused crashes on Netlify functions
 
 export interface IOMVehicleData {
   registrationNumber: string;
@@ -151,84 +151,23 @@ async function getGovImSession(): Promise<{ cookies: string; csrfToken: string }
 export async function scrapeIOMVehicle(
   registration: string
 ): Promise<IOMVehicleData | null> {
-  // DIAGNOSTIC: Test session + POST only (no Cheerio)
   try {
     const formattedReg = registration.toUpperCase().replace(/[\s-]+/g, '');
-    console.log(`[IoM] DIAG: Looking up ${formattedReg}`);
-
-    const session = await getGovImSession();
-    if (!session) {
-      console.log('[IoM] DIAG: Session failed');
-      return null;
-    }
-    console.log(`[IoM] DIAG: Got session, token: ${session.csrfToken.length} chars`);
-
-    // POST the search form
-    const body = new URLSearchParams({
-      RegMarkNo: formattedReg,
-      __RequestVerificationToken: session.csrfToken,
-    });
-
-    const postController = new AbortController();
-    const postTimeout = setTimeout(() => postController.abort(), 4000);
-    let searchRes: Response;
-    try {
-      searchRes = await fetch(GOV_IM_URL, {
-        method: 'POST',
-        headers: {
-          'User-Agent': USER_AGENT,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'en-GB,en;q=0.9',
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Referer': GOV_IM_URL,
-          'Cookie': session.cookies,
-        },
-        body: body.toString(),
-        signal: postController.signal,
-      });
-    } catch (err) {
-      console.error(`[IoM] DIAG: POST failed: ${err}`);
-      return null;
-    } finally {
-      clearTimeout(postTimeout);
-    }
-
-    console.log(`[IoM] DIAG: POST returned ${searchRes.status}`);
-    const html = await searchRes.text();
-    console.log(`[IoM] DIAG: HTML length ${html.length}`);
-
-    // Return null for now - skip Cheerio parsing
-    return null;
-  } catch (err) {
-    console.error('[IoM] DIAG crash:', err);
-    return null;
-  }
-}
-
-async function _scrapeIOMVehicleInner(
-  registration: string
-): Promise<IOMVehicleData | null> {
-  const normalized = registration.toUpperCase().replace(/\s/g, '');
-
-  // Check cache
-  const cached = iomCache.get(normalized);
-  if (cached && Date.now() - cached.timestamp < IOM_CACHE_TTL) {
-    return cached.data;
-  }
-
-  try {
-    const formattedReg = registration.toUpperCase().replace(/[\s-]+/g, '');
-
+    const normalized = registration.toUpperCase().replace(/\s/g, '');
     console.log(`[IoM] Looking up ${formattedReg}`);
 
-    // Get session cookies and CSRF token
-    const session = await getGovImSession();
-    if (!session) {
-      console.error('[IoM] Could not establish session with gov.im');
-      return null;
+    // Check cache
+    const cached = iomCache.get(normalized);
+    if (cached && Date.now() - cached.timestamp < IOM_CACHE_TTL) {
+      return cached.data;
     }
 
-    console.log(`[IoM] Got session, CSRF token length: ${session.csrfToken.length}`);
+    const session = await getGovImSession();
+    if (!session) {
+      console.log('[IoM] Session failed');
+      return null;
+    }
+    console.log(`[IoM] Got session, token: ${session.csrfToken.length} chars`);
 
     // POST the search form
     const body = new URLSearchParams({
@@ -254,23 +193,19 @@ async function _scrapeIOMVehicleInner(
         signal: postController.signal,
       });
     } catch (err) {
-      console.error(`[IoM] POST fetch failed: ${err}`);
+      console.error(`[IoM] POST failed: ${err}`);
       return null;
     } finally {
       clearTimeout(postTimeout);
     }
 
+    console.log(`[IoM] POST returned ${searchRes.status}`);
     if (!searchRes.ok) {
-      console.error(`[IoM] Search POST returned ${searchRes.status}`);
-      return {
-        registrationNumber: registration,
-        scrapedAt: new Date().toISOString(),
-        _debug: { error: `gov.im returned HTTP ${searchRes.status}` },
-      };
+      return null;
     }
 
     const html = await searchRes.text();
-    console.log(`[IoM] Got response, length: ${html.length}`);
+    console.log(`[IoM] HTML length ${html.length}`);
 
     // Check for error/not-found
     if (
@@ -279,44 +214,21 @@ async function _scrapeIOMVehicleInner(
       html.includes('Vehicle not found') ||
       html.includes('The requested URL was rejected')
     ) {
-      const errorData: IOMVehicleData = {
-        registrationNumber: registration,
-        scrapedAt: new Date().toISOString(),
-        _debug: {
-          error: 'Vehicle not found or request rejected',
-          htmlPreview: html.substring(0, 500),
-        },
-      };
-      iomCache.set(normalized, { data: errorData, timestamp: Date.now() });
-      return errorData;
+      console.log('[IoM] Vehicle not found in response');
+      return null;
     }
 
-    // Parse with Cheerio
-    const $ = cheerio.load(html);
-
+    // Parse with regex only - skip Cheerio entirely to avoid crashes
     const vehicleData: IOMVehicleData = {
       registrationNumber: registration,
       scrapedAt: new Date().toISOString(),
     };
 
-    // gov.im uses: <th>Label</th>\n<td>Value</td>
+    // Simple regex parser for gov.im table format: <th>Label</th>\n<td>Value</td>
     const findValue = (label: string): string | undefined => {
-      // Cheerio approach - cleanest for this table structure
-      const th = $(`th:contains("${label}")`).first();
-      if (th.length) {
-        const td = th.next('td');
-        if (td.length && td.text().trim()) {
-          return td.text().trim();
-        }
-      }
-
-      // Regex fallback
-      const match = html.match(new RegExp(`<th[^>]*>[^<]*${label}[^<]*</th>\\s*<td[^>]*>\\s*([^<]+)`, 'i'));
-      if (match && match[1].trim()) {
-        return match[1].trim();
-      }
-
-      return undefined;
+      const regex = new RegExp(`<th[^>]*>[^<]*${label}[^<]*</th>\\s*<td[^>]*>([^<]+)</td>`, 'i');
+      const match = html.match(regex);
+      return match ? match[1].trim() : undefined;
     };
 
     vehicleData.make = findValue('Make');
@@ -352,8 +264,8 @@ async function _scrapeIOMVehicleInner(
     iomCache.set(normalized, { data: vehicleData, timestamp: Date.now() });
 
     return vehicleData;
-  } catch (error) {
-    console.error('[IoM] Error scraping vehicle:', error);
+  } catch (err) {
+    console.error('[IoM] Crash:', err);
     return null;
   }
 }
