@@ -230,10 +230,28 @@ export async function scrapeIOMVehicle(
       console.error('[IoM] Regex crashed:', regexErr);
     }
 
+    // Parse all fields
+    const findValue = (label: string): string | undefined => {
+      const regex = new RegExp(`<th[^>]*>[^<]*${label}[^<]*</th>\\s*<td[^>]*>([^<]+)</td>`, 'i');
+      const match = html.match(regex);
+      return match ? match[1].trim() : undefined;
+    };
+
+    const modelVal = findValue('Model');
+
     const vehicleData: IOMVehicleData = {
       registrationNumber: registration,
       scrapedAt: new Date().toISOString(),
       make,
+      model: modelVal && !modelVal.includes('Variant') ? modelVal : undefined,
+      modelVariant: findValue('Model Variant'),
+      colour: findValue('Colour'),
+      fuelType: findValue('Fuel'),
+      taxStatus: findValue('Status of Vehicle Licence'),
+      taxExpiryDate: findValue('Expiry Date of Vehicle Licence'),
+      dateOfFirstRegistration: findValue('Date of First Registration'),
+      // TEMPORARY: Don't return previousUKRegistration to avoid triggering UK lookup
+      // previousUKRegistration: findValue('Previous Registration Number'),
     };
 
     console.log('[IoM] Created vehicleData object');
