@@ -265,8 +265,7 @@ export async function scrapeIOMVehicle(
       taxStatus: findValue('Status of Vehicle Licence'),
       taxExpiryDate: findValue('Expiry Date of Vehicle Licence'),
       dateOfFirstRegistration: findValue('Date of First Registration'),
-      // TEMPORARY: Don't return previousUKRegistration to avoid triggering UK lookup
-      // previousUKRegistration: findValue('Previous Registration Number'),
+      previousUKRegistration: findValue('Previous Registration Number'),
     };
 
     console.log('[IoM] Created vehicleData object');
