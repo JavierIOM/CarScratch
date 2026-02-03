@@ -63,7 +63,7 @@ function extractCookies(res: Response): string[] {
  */
 async function fetchWithCookies(
   url: string,
-  maxRedirects = 8,
+  maxRedirects = 4,
 ): Promise<{ html: string; cookies: string } | null> {
   const cookieJar = new Map<string, string>(); // name -> name=value
 
@@ -85,7 +85,7 @@ async function fetchWithCookies(
 
   for (let i = 0; i < maxRedirects; i++) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+    const timeout = setTimeout(() => controller.abort(), 3000);
     let res: Response;
     try {
       res = await fetch(currentUrl, { headers: headers(), redirect: 'manual', signal: controller.signal });
@@ -191,7 +191,7 @@ async function _scrapeIOMVehicleInner(
     });
 
     const postController = new AbortController();
-    const postTimeout = setTimeout(() => postController.abort(), 8000);
+    const postTimeout = setTimeout(() => postController.abort(), 4000);
     let searchRes: Response;
     try {
       searchRes = await fetch(GOV_IM_URL, {
