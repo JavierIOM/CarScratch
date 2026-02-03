@@ -246,6 +246,21 @@ export async function scrapeIOMVehicle(
 
     const modelVal = findValue('Model');
 
+    // If make not found, return debug info
+    if (!make) {
+      const debugHtml = makeIndex > 0
+        ? html.substring(makeIndex - 50, makeIndex + 200)
+        : html.substring(0, 500);
+      return {
+        registrationNumber: registration,
+        scrapedAt: new Date().toISOString(),
+        _debug: {
+          error: `Make not found. Index=${makeIndex}, HTML length=${html.length}`,
+          htmlPreview: debugHtml,
+        },
+      };
+    }
+
     const vehicleData: IOMVehicleData = {
       registrationNumber: registration,
       scrapedAt: new Date().toISOString(),
