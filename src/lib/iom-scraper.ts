@@ -152,12 +152,19 @@ async function getGovImSession(): Promise<{ cookies: string; csrfToken: string }
 export async function scrapeIOMVehicle(
   registration: string
 ): Promise<IOMVehicleData | null> {
+  // TEMPORARY: Skip all IoM lookups to diagnose crash
+  console.log('[IoM] Skipping lookup (diagnostic mode)');
+  return null;
+
+  // Original code disabled for now:
+  /*
   try {
     return await _scrapeIOMVehicleInner(registration);
   } catch (err) {
     console.error('[IoM] Top-level crash caught:', err);
     return null;
   }
+  */
 }
 
 async function _scrapeIOMVehicleInner(
