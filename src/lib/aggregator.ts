@@ -198,14 +198,15 @@ async function getIOMVehicleInfo(
       sources: ['gov.im'],
     };
 
-    // If there's a previous UK registration, also fetch UK data for MOT history
+    // If there's a valid previous UK registration, also fetch UK data for MOT history
     let motHistory = undefined;
     let ukExtras: ScrapedExtras | undefined;
     let ukVehicle: VehicleData | undefined;
 
-    if (iomData.previousUKRegistration) {
+    const validPreviousUKReg = sanitizeUKRegistration(iomData.previousUKRegistration);
+    if (validPreviousUKReg) {
       const ukInfo = await getUKVehicleInfo(
-        iomData.previousUKRegistration.replace(/\s/g, '')
+        validPreviousUKReg.replace(/\s/g, '')
       );
       motHistory = ukInfo.motHistory;
       ukVehicle = ukInfo.vehicle;
@@ -228,8 +229,8 @@ async function getIOMVehicleInfo(
 
     // Use IoM insurance result, or fall back to UK reg insurance if available
     let insurance = insuranceResult || undefined;
-    if (!insurance && iomData.previousUKRegistration) {
-      const ukInsurance = await checkInsurance(iomData.previousUKRegistration.replace(/\s/g, ''));
+    if (!insurance && validPreviousUKReg) {
+      const ukInsurance = await checkInsurance(validPreviousUKReg.replace(/\s/g, ''));
       insurance = ukInsurance || undefined;
     }
 
