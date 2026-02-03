@@ -29,7 +29,6 @@ const iomCache = new Map<string, { data: IOMVehicleData | null; timestamp: numbe
 const IOM_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
 
 const GOV_IM_URL = 'https://services.gov.im/service/VehicleSearch';
-const GOV_IM_LAUNCH_URL = 'https://services.gov.im/onlineservices/launchonlineservices.iom';
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
 /**
@@ -152,18 +151,10 @@ async function getGovImSession(): Promise<{ cookies: string; csrfToken: string }
 export async function scrapeIOMVehicle(
   registration: string
 ): Promise<IOMVehicleData | null> {
-  // DIAGNOSTIC: Test just the session fetch
   try {
-    console.log('[IoM] Testing session fetch only...');
-    const session = await getGovImSession();
-    if (session) {
-      console.log('[IoM] Session OK, token length:', session.csrfToken.length);
-    } else {
-      console.log('[IoM] Session failed');
-    }
-    return null; // Still return null for now
+    return await _scrapeIOMVehicleInner(registration);
   } catch (err) {
-    console.error('[IoM] Crash in session fetch:', err);
+    console.error('[IoM] Top-level crash caught:', err);
     return null;
   }
 }
