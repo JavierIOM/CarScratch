@@ -152,19 +152,20 @@ async function getGovImSession(): Promise<{ cookies: string; csrfToken: string }
 export async function scrapeIOMVehicle(
   registration: string
 ): Promise<IOMVehicleData | null> {
-  // TEMPORARY: Skip all IoM lookups to diagnose crash
-  console.log('[IoM] Skipping lookup (diagnostic mode)');
-  return null;
-
-  // Original code disabled for now:
-  /*
+  // DIAGNOSTIC: Test just the session fetch
   try {
-    return await _scrapeIOMVehicleInner(registration);
+    console.log('[IoM] Testing session fetch only...');
+    const session = await getGovImSession();
+    if (session) {
+      console.log('[IoM] Session OK, token length:', session.csrfToken.length);
+    } else {
+      console.log('[IoM] Session failed');
+    }
+    return null; // Still return null for now
   } catch (err) {
-    console.error('[IoM] Top-level crash caught:', err);
+    console.error('[IoM] Crash in session fetch:', err);
     return null;
   }
-  */
 }
 
 async function _scrapeIOMVehicleInner(
