@@ -151,10 +151,56 @@ async function getGovImSession(): Promise<{ cookies: string; csrfToken: string }
 export async function scrapeIOMVehicle(
   registration: string
 ): Promise<IOMVehicleData | null> {
+  // DIAGNOSTIC: Test session + POST only (no Cheerio)
   try {
-    return await _scrapeIOMVehicleInner(registration);
+    const formattedReg = registration.toUpperCase().replace(/[\s-]+/g, '');
+    console.log(`[IoM] DIAG: Looking up ${formattedReg}`);
+
+    const session = await getGovImSession();
+    if (!session) {
+      console.log('[IoM] DIAG: Session failed');
+      return null;
+    }
+    console.log(`[IoM] DIAG: Got session, token: ${session.csrfToken.length} chars`);
+
+    // POST the search form
+    const body = new URLSearchParams({
+      RegMarkNo: formattedReg,
+      __RequestVerificationToken: session.csrfToken,
+    });
+
+    const postController = new AbortController();
+    const postTimeout = setTimeout(() => postController.abort(), 4000);
+    let searchRes: Response;
+    try {
+      searchRes = await fetch(GOV_IM_URL, {
+        method: 'POST',
+        headers: {
+          'User-Agent': USER_AGENT,
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-GB,en;q=0.9',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Referer': GOV_IM_URL,
+          'Cookie': session.cookies,
+        },
+        body: body.toString(),
+        signal: postController.signal,
+      });
+    } catch (err) {
+      console.error(`[IoM] DIAG: POST failed: ${err}`);
+      return null;
+    } finally {
+      clearTimeout(postTimeout);
+    }
+
+    console.log(`[IoM] DIAG: POST returned ${searchRes.status}`);
+    const html = await searchRes.text();
+    console.log(`[IoM] DIAG: HTML length ${html.length}`);
+
+    // Return null for now - skip Cheerio parsing
+    return null;
   } catch (err) {
-    console.error('[IoM] Top-level crash caught:', err);
+    console.error('[IoM] DIAG crash:', err);
     return null;
   }
 }
