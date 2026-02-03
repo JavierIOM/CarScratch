@@ -25,6 +25,10 @@ const IOM_PATTERNS = [
   // e.g., 1-MN-00, 123-MN-456
   /^\d+-MN-\d+$/i,
 
+  // Numbers followed by MN-containing suffix: 79NMN, 123MN, 45BMN
+  // e.g., 79-NMN, 79NMN, 123MN
+  /^\d+\s*[A-Z]?MN[A-Z]?$/i,
+
   // Two letter MN suffix: [A-Z][A-Z]MN followed by numbers
   // Covers: AMN, BMN, CMN, DMN, EMN, FMN, GMN, HMN, JMN, KMN, LMN, MMN, NMN, PMN, RMN, SMN, TMN, VMN, WMN, XMN, YMN
   /^[A-Z]{1,2}MN\s*\d+\s*[A-Z]?$/i,
@@ -77,6 +81,12 @@ export function formatManxPlateForApi(registration: string): string {
     return `${modernMatch[1]}-MN-${modernMatch[2]}`;
   }
 
+  // For numbers + MN suffix: 79NMN, 123MN, 45BMN
+  const numMnMatch = clean.match(/^(\d+)([A-Z]?MN[A-Z]?)$/i);
+  if (numMnMatch) {
+    return `${numMnMatch[1]}-${numMnMatch[2]}`;
+  }
+
   // Fallback: return as-is with hyphens between groups
   return clean;
 }
@@ -102,6 +112,12 @@ export function formatManxPlateForDisplay(registration: string): string {
       return `${letters} ${numbers} ${suffix}`;
     }
     return `${letters} ${numbers}`;
+  }
+
+  // Pattern: numbers + MN suffix (79NMN -> 79 NMN)
+  const numMnMatch = clean.match(/^(\d+)([A-Z]?MN[A-Z]?)$/i);
+  if (numMnMatch) {
+    return `${numMnMatch[1]} ${numMnMatch[2]}`;
   }
 
   return registration.toUpperCase();
