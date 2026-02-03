@@ -218,24 +218,31 @@ export async function scrapeIOMVehicle(
       return null;
     }
 
-    // DIAGNOSTIC: Just try parsing Make to see if regex crashes
-    console.log('[IoM] About to regex parse...');
-
-    let make: string | undefined;
-    try {
-      const makeMatch = html.match(/<th[^>]*>Make<\/th>\s*<td[^>]*>([^<]+)<\/td>/i);
-      make = makeMatch ? makeMatch[1].trim() : undefined;
-      console.log(`[IoM] Make = ${make}`);
-    } catch (regexErr) {
-      console.error('[IoM] Regex crashed:', regexErr);
+    // Log a snippet of the HTML around "Make" for debugging
+    const makeIndex = html.indexOf('Make');
+    console.log(`[IoM] Make index: ${makeIndex}`);
+    if (makeIndex > 0) {
+      console.log(`[IoM] HTML around Make: ${html.substring(makeIndex - 20, makeIndex + 100)}`);
     }
 
-    // Parse all fields
+    // Parse all fields - use flexible regex that handles whitespace/newlines
     const findValue = (label: string): string | undefined => {
-      const regex = new RegExp(`<th[^>]*>[^<]*${label}[^<]*</th>\\s*<td[^>]*>([^<]+)</td>`, 'i');
-      const match = html.match(regex);
-      return match ? match[1].trim() : undefined;
+      // Try multiple patterns
+      // Pattern 1: <th>Label</th> followed by <td>Value</td> with possible whitespace/newlines
+      const regex1 = new RegExp(`<th[^>]*>\\s*${label}\\s*</th>[\\s\\S]*?<td[^>]*>([^<]+)</td>`, 'i');
+      const match1 = html.match(regex1);
+      if (match1) return match1[1].trim();
+
+      // Pattern 2: More lenient - just find th containing label then next td
+      const regex2 = new RegExp(`<th[^>]*>[^<]*${label}[^<]*</th>\\s*<td[^>]*>\\s*([^<]+)`, 'i');
+      const match2 = html.match(regex2);
+      if (match2) return match2[1].trim();
+
+      return undefined;
     };
+
+    const make = findValue('Make');
+    console.log(`[IoM] Make = ${make}`);
 
     const modelVal = findValue('Model');
 
