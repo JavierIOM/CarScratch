@@ -172,23 +172,19 @@ async function getIOMVehicleInfo(
     }
 
     if (!iomData.make) {
-      // Include debug info in error if available
+      // Log debug info server-side only
       const debugInfo = iomData._debug;
-      let errorMsg = 'Could not extract vehicle data from gov.im.';
-      if (debugInfo?.error) {
-        errorMsg += ' Error: ' + debugInfo.error;
-      }
-      if (debugInfo?.url) {
-        errorMsg += ' URL: ' + debugInfo.url;
-      }
-      if (debugInfo?.htmlPreview) {
-        // Show first 200 chars of HTML for debugging
-        errorMsg += ' Page preview: ' + debugInfo.htmlPreview.substring(0, 200);
+      if (debugInfo) {
+        console.error('[IoM] Failed to extract vehicle data:', {
+          error: debugInfo.error,
+          url: debugInfo.url,
+          htmlLength: debugInfo.htmlPreview?.length,
+        });
       }
       return {
         registration: normalized,
         isManx: true,
-        error: errorMsg,
+        error: 'Vehicle not found on the Isle of Man registry. Please check the registration and try again.',
       };
     }
 
