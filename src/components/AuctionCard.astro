@@ -1,0 +1,65 @@
+---
+import type { AuctionResult } from '../lib/types';
+
+interface Props {
+  auction: AuctionResult;
+}
+
+const { auction } = Astro.props;
+
+const formatDate = (dateStr: string) => {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+};
+
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency: 'GBP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(price);
+};
+---
+
+<div class="bg-slate-800/50 border border-amber-600/40">
+  <div class="p-4 border-b border-slate-700 flex items-center gap-3">
+    <div class="w-8 h-8 bg-amber-500/15 text-amber-400 flex items-center justify-center flex-shrink-0">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+        <path d="M2 17l10 5 10-5" />
+        <path d="M2 12l10 5 10-5" />
+      </svg>
+    </div>
+    <div>
+      <h3 class="font-semibold text-amber-400">Appeared in Chrystals Auction</h3>
+      <p class="text-xs text-slate-500">
+        <a href="https://www.chrystalsauctions.im" target="_blank" rel="noopener noreferrer" class="hover:text-slate-400 transition-colors">
+          chrystalsauctions.im
+        </a>
+      </p>
+    </div>
+  </div>
+
+  <div class="divide-y divide-slate-700/50">
+    {auction.appearances.map((a) => (
+      <div class="p-4 flex items-center justify-between gap-4">
+        <div>
+          <p class="text-sm text-slate-300">{a.description}</p>
+          <p class="text-xs text-slate-500 mt-1">{formatDate(a.auctionDate)}</p>
+        </div>
+        <div class="text-right flex-shrink-0">
+          {a.hammerPrice !== null ? (
+            <span class="text-sm font-semibold text-green-400">{formatPrice(a.hammerPrice)}</span>
+          ) : (
+            <span class="text-sm text-slate-500">Didn't make reserve</span>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+</div>

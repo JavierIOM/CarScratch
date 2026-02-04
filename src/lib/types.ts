@@ -86,6 +86,17 @@ export interface InsuranceStatus {
   checkedAt: string;
 }
 
+// Auction appearance data
+export interface AuctionAppearance {
+  description: string;
+  auctionDate: string;
+  hammerPrice: number | null;
+}
+
+export interface AuctionResult {
+  appearances: AuctionAppearance[];
+}
+
 // Combined vehicle info from all sources
 export interface VehicleInfo {
   registration: string;
@@ -93,6 +104,7 @@ export interface VehicleInfo {
   motHistory?: MOTHistory;
   extras?: ScrapedExtras;
   insurance?: InsuranceStatus;
+  auction?: AuctionResult;
   ukVehicle?: VehicleData;
   isManx?: boolean;
   error?: string;

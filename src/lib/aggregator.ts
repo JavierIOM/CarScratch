@@ -6,6 +6,7 @@ import { scrapeIOMVehicle, iomToVehicleData } from './iom-scraper';
 import { getDVLAVehicle } from './dvla';
 import { getMOTHistory } from './mot';
 import { checkInsurance } from './insurance';
+import { checkChrystalsAuction } from './chrystals';
 
 // Check if API keys are available
 const DVLA_API_KEY = import.meta.env.DVLA_API_KEY;
@@ -130,15 +131,22 @@ export async function getVehicleInfo(registration: string): Promise<VehicleInfo>
     };
   }
 
+  // Check Chrystals auction data
+  const auction = checkChrystalsAuction(normalized);
+
   // Check if this is an Isle of Man registration
   const isManx = isManxPlate(registration);
 
   if (isManx && ENABLE_IOM_LOOKUP) {
-    return getIOMVehicleInfo(normalized, registration);
+    const result = await getIOMVehicleInfo(normalized, registration);
+    if (auction) result.auction = auction;
+    return result;
   }
 
   // Standard UK lookup
-  return getUKVehicleInfo(normalized);
+  const result = await getUKVehicleInfo(normalized);
+  if (auction) result.auction = auction;
+  return result;
 }
 
 /**

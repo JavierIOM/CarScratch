@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import SearchForm from '../../components/SearchForm.astro';
 import VehicleCard from '../../components/VehicleCard.astro';
 import ExtrasCard from '../../components/ExtrasCard.astro';
+import AuctionCard from '../../components/AuctionCard.astro';
 import MOTHistory from '../../components/MOTHistory.astro';
 import MileageChart from '../../components/MileageChart.astro';
 import { getVehicleInfo } from '../../lib/aggregator';
@@ -115,6 +116,10 @@ const vehicleSchema = vehicle ? {
 
         {vehicleInfo.extras && (
           <ExtrasCard extras={vehicleInfo.extras} />
+        )}
+
+        {vehicleInfo.auction && (
+          <AuctionCard auction={vehicleInfo.auction} />
         )}
 
         {/* Previous UK Registration data for Manx plates */}
