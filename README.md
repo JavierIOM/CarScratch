@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://carscratch.netlify.app">Live Site</a>
+  <a href="https://carscratch.uk">Live Site</a>
 </p>
 
 ---
@@ -166,4 +166,4 @@ Built by [JavierIOM](https://github.com/JavierIOM)
 
 ---
 
-**Current Version:** v1.2.0
+**Current Version:** v1.3.0
