@@ -176,4 +176,4 @@ Built by [JavierIOM](https://github.com/JavierIOM)
 
 ---
 
-**Current Version:** v1.4.1
+**Current Version:** v1.4.2
