@@ -5,7 +5,6 @@ import { isManxPlate } from './iom-detector';
 import { scrapeIOMVehicle, iomToVehicleData } from './iom-scraper';
 import { getDVLAVehicle } from './dvla';
 import { getMOTHistory } from './mot';
-import { checkInsurance } from './insurance';
 import { checkChrystalsAuction } from './chrystals';
 
 // Check if API keys are available
@@ -157,9 +156,8 @@ async function getIOMVehicleInfo(
   originalReg: string
 ): Promise<VehicleInfo> {
   try {
-    // Fetch IoM data - skip insurance lookup for now (causes timeouts)
+    // Fetch IoM data
     const iomData = await scrapeIOMVehicle(originalReg);
-    const insuranceResult = null;
 
     if (!iomData) {
       return {
@@ -231,19 +229,11 @@ async function getIOMVehicleInfo(
       ],
     };
 
-    // Use IoM insurance result, or fall back to UK reg insurance if available
-    let insurance = insuranceResult || undefined;
-    if (!insurance && validPreviousUKReg) {
-      const ukInsurance = await checkInsurance(validPreviousUKReg.replace(/\s/g, ''));
-      insurance = ukInsurance || undefined;
-    }
-
     return {
       registration: normalized,
       vehicle,
       motHistory,
       extras: mergedExtras,
-      insurance,
       ukVehicle,
       isManx: true,
     };
@@ -284,9 +274,6 @@ async function getUKVehicleInfo(normalized: string): Promise<VehicleInfo> {
       promises.push(scrapeTotalCarCheck(normalized));
     }
 
-    // Insurance check via askMID (uses Browserless)
-    promises.push(checkInsurance(normalized));
-
     const results = await Promise.all(promises);
 
     let vehicle = results[0] as VehicleData | null;
@@ -294,8 +281,6 @@ async function getUKVehicleInfo(normalized: string): Promise<VehicleInfo> {
     const scrapedData = ENABLE_SCRAPING
       ? (results[2] as Awaited<ReturnType<typeof scrapeTotalCarCheck>>)
       : null;
-    const insuranceIdx = ENABLE_SCRAPING ? 3 : 2;
-    const insurance = results[insuranceIdx] as Awaited<ReturnType<typeof checkInsurance>>;
 
     // If no mock/API vehicle data but we have scraped data, build vehicle from scraped
     if (!vehicle && scrapedData && scrapedData.manufacturer) {
@@ -335,7 +320,6 @@ async function getUKVehicleInfo(normalized: string): Promise<VehicleInfo> {
       vehicle: vehicle || undefined,
       motHistory: motHistory || undefined,
       extras,
-      insurance: insurance || undefined,
     };
   } catch (err) {
     console.error('Error fetching vehicle info:', err);
