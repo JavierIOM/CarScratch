@@ -29,7 +29,7 @@ CarScratch is a web application that aggregates vehicle information from multipl
 - **Performance Data** - BHP, top speed, 0-60 times (where available)
 - **Insurance Group** - Insurance group rating
 - **ULEZ/CAZ Compliance** - London ULEZ and Clean Air Zone compliance status
-- **Auction History** - Shows if a vehicle has appeared in Chrystals Auctions with hammer prices
+- **Auction History** - Shows if a vehicle has appeared in IOM auctions with hammer prices
 - **Isle of Man Support** - Native support for Manx registrations via gov.im
 - **Insurance Check Link** - Quick link to askMID to verify vehicle insurance status
 - **Smart Plate Detection** - Automatically detects UK vs Isle of Man plates with visual badge indicator
@@ -51,7 +51,7 @@ CarScratch is a web application that aggregates vehicle information from multipl
 | MOT History API | Official MOT test history, mileage readings, defects | Active |
 | TotalCarCheck | Vehicle specs, performance, insurance group, ULEZ/CAZ, market data | Active (scraping) |
 | gov.im | Isle of Man vehicle registration data | Active (direct HTTP) |
-| Chrystals Auctions | IoM auction history and hammer prices | Active (manual updates) |
+| IOM Auction Site | IoM auction history and hammer prices | Active (manual updates) |
 
 ## API Keys & Setup
 
@@ -152,13 +152,19 @@ For Isle of Man vehicles, enter a Manx plate (e.g., PMN 147 E, MAN 123, 79NMN).
 
 ## Auction Data
 
-The site includes auction history from [Chrystals Auctions](https://www.chrystalsauctions.im) (Isle of Man). This data is manually updated and shows:
+The site includes auction history from the [IOM Auction Site](https://www.chrystalsauctions.im) (Isle of Man). This data is manually updated and shows:
 
 - Auction date
 - Vehicle description from the lot
 - Hammer price (or "Didn't make reserve" if unsold)
 
 The raw auction data is available at `/data/chrystals-auctions.json`.
+
+## Privacy & Data Protection
+
+CarScratch does not store vehicle lookup data or track individual searches. All queries are processed in real-time and results are not cached beyond the current session. We use no analytics or tracking cookies.
+
+This service does not breach GDPR or any data protection regulations. All vehicle data displayed is already publicly available through official government services and public records. Vehicle registration data is not considered personal data as it relates to the vehicle, not to any individual. We simply aggregate publicly accessible information into a convenient format - no private or protected data is collected, processed, or stored.
 
 ## License
 
@@ -170,4 +176,4 @@ Built by [JavierIOM](https://github.com/JavierIOM)
 
 ---
 
-**Current Version:** v1.4.0
+**Current Version:** v1.4.1
