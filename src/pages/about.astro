@@ -1,0 +1,201 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="About CarScratch - How It Works"
+  description="Learn about CarScratch, the UK and Isle of Man vehicle information aggregator. Discover how we collect and display vehicle data from official sources."
+  canonicalPath="/about"
+>
+  <div class="max-w-3xl mx-auto px-4 py-12">
+    <h1 class="text-3xl font-bold mb-8">About CarScratch</h1>
+
+    <div class="space-y-8 text-slate-300">
+      <!-- What is CarScratch -->
+      <section>
+        <h2 class="text-xl font-semibold text-white mb-3">What is CarScratch?</h2>
+        <p class="leading-relaxed">
+          CarScratch is a free vehicle information aggregator for UK and Isle of Man registered vehicles.
+          Enter any registration number to instantly access comprehensive data including MOT history,
+          tax status, vehicle specifications, mileage tracking, and auction history - all in one place.
+        </p>
+      </section>
+
+      <!-- How It Works -->
+      <section>
+        <h2 class="text-xl font-semibold text-white mb-3">How It Works</h2>
+        <p class="leading-relaxed mb-4">
+          When you search for a registration, CarScratch queries multiple data sources simultaneously
+          and combines the results into a single, easy-to-read report. The entire lookup typically
+          takes 2-5 seconds depending on the vehicle type.
+        </p>
+        <div class="bg-slate-800/50 border border-slate-700 p-4 rounded">
+          <ol class="list-decimal list-inside space-y-2 text-sm">
+            <li>You enter a registration number</li>
+            <li>We detect whether it's a UK or Isle of Man plate</li>
+            <li>Parallel requests are made to relevant data sources</li>
+            <li>Results are aggregated, validated and displayed</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- Data Sources -->
+      <section>
+        <h2 class="text-xl font-semibold text-white mb-3">Data Sources</h2>
+        <p class="leading-relaxed mb-4">
+          All data displayed on CarScratch is sourced from official government APIs and publicly
+          available information. We do not store or cache personal data.
+        </p>
+
+        <div class="space-y-4">
+          <div class="bg-slate-800/50 border border-slate-700 p-4">
+            <h3 class="font-semibold text-amber-500 mb-2">DVLA Vehicle Enquiry Service</h3>
+            <p class="text-sm text-slate-400">
+              Official UK government API providing vehicle details including make, model, colour,
+              fuel type, engine size, CO2 emissions, tax status, and MOT status.
+            </p>
+          </div>
+
+          <div class="bg-slate-800/50 border border-slate-700 p-4">
+            <h3 class="font-semibold text-amber-500 mb-2">MOT History API</h3>
+            <p class="text-sm text-slate-400">
+              Official DVSA API providing complete MOT test history including test results,
+              mileage readings, advisories, failures, and dangerous defects.
+            </p>
+          </div>
+
+          <div class="bg-slate-800/50 border border-slate-700 p-4">
+            <h3 class="font-semibold text-amber-500 mb-2">Isle of Man Government</h3>
+            <p class="text-sm text-slate-400">
+              Official gov.im vehicle search for Manx registrations. Provides make, model,
+              colour, engine size, fuel type, tax status, and previous UK registration details.
+            </p>
+          </div>
+
+          <div class="bg-slate-800/50 border border-slate-700 p-4">
+            <h3 class="font-semibold text-amber-500 mb-2">Chrystals Auctions</h3>
+            <p class="text-sm text-slate-400">
+              Isle of Man vehicle auction data showing if a vehicle has appeared at auction,
+              including the auction date, lot description, and hammer price (if sold).
+            </p>
+          </div>
+
+          <div class="bg-slate-800/50 border border-slate-700 p-4">
+            <h3 class="font-semibold text-amber-500 mb-2">TotalCarCheck</h3>
+            <p class="text-sm text-slate-400">
+              Supplementary vehicle data including performance specs (BHP, top speed),
+              insurance group, ULEZ/CAZ compliance, and market pricing information.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Technical Details -->
+      <section>
+        <h2 class="text-xl font-semibold text-white mb-3">Technical Details</h2>
+        <div class="bg-slate-800/50 border border-slate-700 p-4 rounded">
+          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <dt class="text-slate-500">Framework</dt>
+              <dd class="font-medium">Astro with SSR</dd>
+            </div>
+            <div>
+              <dt class="text-slate-500">Styling</dt>
+              <dd class="font-medium">Tailwind CSS v4</dd>
+            </div>
+            <div>
+              <dt class="text-slate-500">Hosting</dt>
+              <dd class="font-medium">Netlify Functions</dd>
+            </div>
+            <div>
+              <dt class="text-slate-500">HTML Parsing</dt>
+              <dd class="font-medium">Cheerio</dd>
+            </div>
+            <div>
+              <dt class="text-slate-500">Source Code</dt>
+              <dd class="font-medium">
+                <a href="https://github.com/JavierIOM/CarScratch" target="_blank" rel="noopener noreferrer" class="text-amber-500 hover:text-amber-400">
+                  GitHub
+                </a>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-slate-500">Version</dt>
+              <dd class="font-medium">v1.4.0</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <!-- Registration Formats -->
+      <section>
+        <h2 class="text-xl font-semibold text-white mb-3">Supported Registration Formats</h2>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="bg-slate-800/50 border border-slate-700 p-4">
+            <h3 class="font-semibold text-blue-400 mb-2">UK Plates</h3>
+            <ul class="text-sm text-slate-400 space-y-1">
+              <li><code class="bg-slate-700 px-1 rounded">AB12 CDE</code> - Current (2001+)</li>
+              <li><code class="bg-slate-700 px-1 rounded">A12 XYZ</code> - Prefix (1983-2001)</li>
+              <li><code class="bg-slate-700 px-1 rounded">ABC 123D</code> - Suffix (1963-1983)</li>
+              <li><code class="bg-slate-700 px-1 rounded">ABC 123</code> - Dateless</li>
+            </ul>
+          </div>
+
+          <div class="bg-slate-800/50 border border-slate-700 p-4">
+            <h3 class="font-semibold text-red-400 mb-2">Isle of Man Plates</h3>
+            <ul class="text-sm text-slate-400 space-y-1">
+              <li><code class="bg-slate-700 px-1 rounded">PMN 147 E</code> - Classic</li>
+              <li><code class="bg-slate-700 px-1 rounded">MAN 123</code> - MAN prefix</li>
+              <li><code class="bg-slate-700 px-1 rounded">1-MN-00</code> - Modern</li>
+              <li><code class="bg-slate-700 px-1 rounded">79NMN</code> - Numbers first</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Privacy -->
+      <section>
+        <h2 class="text-xl font-semibold text-white mb-3">Privacy</h2>
+        <p class="leading-relaxed">
+          CarScratch does not store vehicle lookup data or track individual searches.
+          All queries are processed in real-time and results are not cached beyond the
+          current session. We use no analytics or tracking cookies.
+        </p>
+      </section>
+
+      <!-- Disclaimer -->
+      <section>
+        <h2 class="text-xl font-semibold text-white mb-3">Disclaimer</h2>
+        <p class="leading-relaxed text-slate-400">
+          All information is provided for general informational purposes only. While we strive
+          for accuracy, CarScratch makes no warranties about the completeness, reliability,
+          or accuracy of the data displayed. Always verify important information with official
+          sources before making decisions. Vehicle data may be subject to change and may not
+          reflect the current state of the vehicle.
+        </p>
+      </section>
+
+      <!-- Contact -->
+      <section>
+        <h2 class="text-xl font-semibold text-white mb-3">Feedback</h2>
+        <p class="leading-relaxed">
+          Have a suggestion or found an issue? Use our
+          <a href="/suggestions" class="text-amber-500 hover:text-amber-400">Suggestion Box</a>
+          to let us know. You can also contribute to the project on
+          <a href="https://github.com/JavierIOM/CarScratch" target="_blank" rel="noopener noreferrer" class="text-amber-500 hover:text-amber-400">GitHub</a>.
+        </p>
+      </section>
+    </div>
+
+    <!-- Back to home -->
+    <div class="mt-12 pt-8 border-t border-slate-700">
+      <a href="/" class="inline-flex items-center gap-2 text-amber-500 hover:text-amber-400 transition-colors">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Vehicle Lookup
+      </a>
+    </div>
+  </div>
+</Layout>
