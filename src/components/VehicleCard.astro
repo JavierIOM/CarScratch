@@ -1,6 +1,7 @@
 ---
 import type { VehicleData } from '../lib/types';
 import { isManxPlate, formatManxPlateForDisplay } from '../lib/iom-detector';
+import { formatUKPlate } from '../lib/plate-formatter';
 
 interface Props {
   vehicle: VehicleData;
@@ -17,11 +18,7 @@ const formatReg = (reg: string) => {
   if (isManxReg) {
     return formatManxPlateForDisplay(reg);
   }
-  const clean = reg.replace(/\s/g, '').toUpperCase();
-  if (clean.length > 4) {
-    return clean.slice(0, 4) + ' ' + clean.slice(4);
-  }
-  return clean;
+  return formatUKPlate(reg);
 };
 
 // Format date - handles multiple formats including UK DD/MM/YYYY

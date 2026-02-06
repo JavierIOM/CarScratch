@@ -8,6 +8,7 @@ import MOTHistory from '../../components/MOTHistory.astro';
 import MileageChart from '../../components/MileageChart.astro';
 import { getVehicleInfo } from '../../lib/aggregator';
 import { isManxPlate, formatManxPlateForDisplay } from '../../lib/iom-detector';
+import { formatUKPlate } from '../../lib/plate-formatter';
 
 const { reg } = Astro.params;
 
@@ -19,16 +20,10 @@ const vehicleInfo = await getVehicleInfo(reg);
 
 // Format registration for display
 const formatReg = (r: string) => {
-  // Use proper Manx formatting for IoM plates
   if (isManxPlate(r)) {
     return formatManxPlateForDisplay(r);
   }
-  // Standard UK format: split after 4 characters
-  const clean = r.replace(/\s/g, '').toUpperCase();
-  if (clean.length > 4) {
-    return clean.slice(0, 4) + ' ' + clean.slice(4);
-  }
-  return clean;
+  return formatUKPlate(r);
 };
 
 const formattedReg = formatReg(reg);
