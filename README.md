@@ -18,20 +18,22 @@
 
 ## Overview
 
-CarScratch is a web application that aggregates vehicle information from multiple sources for UK and Isle of Man registered vehicles. Enter a registration number to get comprehensive data including vehicle details, MOT history, and more.
+CarScratch is a web application that aggregates vehicle information from multiple sources for UK and Isle of Man registered vehicles. Enter a registration number to get comprehensive data including vehicle details, MOT history, auction history, and more.
 
 ## Features
 
 - **Vehicle Details** - Make, model, colour, engine size, fuel type, CO2 emissions
 - **Tax Status** - Current tax status and expiry date
 - **MOT History** - Full MOT test history with pass/fail results, advisories, and defects
-- **Mileage Tracking** - Visual mileage history chart with yearly averages
+- **Mileage Tracking** - Visual mileage history chart with yearly averages (deduplicated for accuracy)
 - **Performance Data** - BHP, top speed, 0-60 times (where available)
 - **Insurance Group** - Insurance group rating
 - **ULEZ/CAZ Compliance** - London ULEZ and Clean Air Zone compliance status
+- **Auction History** - Shows if a vehicle has appeared in Chrystals Auctions with hammer prices
 - **Isle of Man Support** - Native support for Manx registrations via gov.im
 - **Insurance Check Link** - Quick link to askMID to verify vehicle insurance status
 - **Smart Plate Detection** - Automatically detects UK vs Isle of Man plates with visual badge indicator
+- **Smart Plate Formatting** - Correctly formats all UK plate types (current, prefix, suffix, dateless)
 - **Suggestion Box** - User feedback form for feature requests and improvements
 
 ## Tech Stack
@@ -39,29 +41,21 @@ CarScratch is a web application that aggregates vehicle information from multipl
 - **Framework**: [Astro](https://astro.build) with SSR
 - **Styling**: [Tailwind CSS](https://tailwindcss.com) v4
 - **Hosting**: [Netlify](https://netlify.com)
-- **Scraping**: [Cheerio](https://cheerio.js.org) + [Browserless.io](https://browserless.io)
+- **Scraping**: [Cheerio](https://cheerio.js.org) for HTML parsing
 
 ## Data Sources
 
 | Source | Data Provided | Status |
 |--------|--------------|--------|
 | DVLA Vehicle Enquiry API | Official UK vehicle data (make, model, colour, tax, MOT status) | Active |
-| TotalCarCheck | Vehicle specs, performance, insurance group, ULEZ/CAZ, market data | Active (scraping) |
-| gov.im | Isle of Man vehicle registration data | Active (via Browserless) |
 | MOT History API | Official MOT test history, mileage readings, defects | Active |
+| TotalCarCheck | Vehicle specs, performance, insurance group, ULEZ/CAZ, market data | Active (scraping) |
+| gov.im | Isle of Man vehicle registration data | Active (direct HTTP) |
+| Chrystals Auctions | IoM auction history and hammer prices | Active (manual updates) |
 
 ## API Keys & Setup
 
-### Browserless.io (Required for Isle of Man)
-
-Used to render the gov.im vehicle search page which blocks standard HTTP requests.
-
-1. Sign up at [browserless.io](https://browserless.io)
-2. Free tier includes 6 hours of browser time per month
-3. Get your API key from the dashboard
-4. Add to Netlify environment variables as `BROWSERLESS_API_KEY`
-
-### DVLA Vehicle Enquiry Service (Active)
+### DVLA Vehicle Enquiry Service
 
 Official UK government API for vehicle data.
 
@@ -70,7 +64,7 @@ Official UK government API for vehicle data.
 3. Provides: make, model, colour, fuel type, tax status, MOT status, CO2 emissions
 4. Add to Netlify environment variables as `DVLA_API_KEY`
 
-### MOT History API (Active)
+### MOT History API
 
 Official UK government API for MOT test history.
 
@@ -83,10 +77,7 @@ Official UK government API for MOT test history.
 ## Environment Variables
 
 ```env
-# Required for Isle of Man lookups
-BROWSERLESS_API_KEY=your_browserless_api_key
-
-# Planned - Official UK APIs
+# Official UK APIs
 DVLA_API_KEY=your_dvla_api_key
 MOT_CLIENT_ID=your_mot_client_id
 MOT_CLIENT_SECRET=your_mot_client_secret
@@ -126,18 +117,21 @@ For testing with mock data:
 
 For real UK vehicles, enter any valid UK registration number.
 
-For Isle of Man vehicles, enter a Manx plate (e.g., PMN 147 E, MAN 123).
+For Isle of Man vehicles, enter a Manx plate (e.g., PMN 147 E, MAN 123, 79NMN).
 
 ## Supported Registration Formats
 
 ### UK
-- Standard format: `AB12 CDE`
-- Older formats: `A123 ABC`, `ABC 123A`
+- Current format: `AB12 CDE`
+- Prefix format: `A12 XYZ`, `A123 BCD`
+- Suffix format: `ABC 123D`
+- Dateless: `ABC 123`, `123 ABC`, `A 1`
 
 ### Isle of Man
 - Classic: `PMN 147 E`, `MAN 123`
 - Letter suffixes: `AMN`, `BMN`, `CMN`, etc.
 - Modern: `1-MN-00`
+- Numbers first: `79NMN`
 
 ## UI Features
 
@@ -156,6 +150,16 @@ For Isle of Man vehicles, enter a Manx plate (e.g., PMN 147 E, MAN 123).
 - Canonical URLs on all pages
 - PWA manifest for app-like experience
 
+## Auction Data
+
+The site includes auction history from [Chrystals Auctions](https://www.chrystalsauctions.im) (Isle of Man). This data is manually updated and shows:
+
+- Auction date
+- Vehicle description from the lot
+- Hammer price (or "Didn't make reserve" if unsold)
+
+The raw auction data is available at `/data/chrystals-auctions.json`.
+
 ## License
 
 ISC
@@ -166,4 +170,4 @@ Built by [JavierIOM](https://github.com/JavierIOM)
 
 ---
 
-**Current Version:** v1.3.0
+**Current Version:** v1.4.0
