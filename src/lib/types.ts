@@ -79,13 +79,6 @@ export interface ScrapedExtras {
   sources?: string[];
 }
 
-// Insurance check result
-export interface InsuranceStatus {
-  insured: boolean | null;
-  message?: string;
-  checkedAt: string;
-}
-
 // Auction appearance data
 export interface AuctionAppearance {
   description: string;
@@ -103,7 +96,6 @@ export interface VehicleInfo {
   vehicle?: VehicleData;
   motHistory?: MOTHistory;
   extras?: ScrapedExtras;
-  insurance?: InsuranceStatus;
   auction?: AuctionResult;
   ukVehicle?: VehicleData;
   isManx?: boolean;
