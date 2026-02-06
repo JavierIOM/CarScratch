@@ -7,8 +7,17 @@ interface Props {
 
 const { tests } = Astro.props;
 
+// Deduplicate tests with same date and mileage (e.g. fail + retest on same day)
+const seen = new Set<string>();
+const uniqueTests = tests.filter(test => {
+  const key = `${test.completedDate}-${test.odometerValue}`;
+  if (seen.has(key)) return false;
+  seen.add(key);
+  return true;
+});
+
 // Sort tests by date (oldest first) for the chart
-const sortedTests = [...tests].reverse();
+const sortedTests = [...uniqueTests].reverse();
 
 // Calculate chart data
 const mileages = sortedTests.map(t => t.odometerValue);
@@ -39,7 +48,7 @@ const formatDate = (dateStr: string) => {
     <div>
       <h3 class="text-lg font-semibold">Mileage History</h3>
       <p class="text-sm text-slate-500 mt-1">
-        Based on {tests.length} MOT test{tests.length !== 1 ? 's' : ''}
+        Based on {sortedTests.length} MOT test{sortedTests.length !== 1 ? 's' : ''}
       </p>
     </div>
     {yearlyAverage > 0 && (
