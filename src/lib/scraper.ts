@@ -177,16 +177,36 @@ export async function scrapeTotalCarCheck(
       extractField('Tax Status') ||
       extractField('Tax');
 
-    // ULEZ/CAZ
-    const ulezStr = extractField('ULEZ') || extractField('London ULEZ');
-    data.ulezCompliant =
-      ulezStr?.toLowerCase().includes('yes') ||
-      ulezStr?.toLowerCase().includes('compliant');
+    // ULEZ/CAZ - check if page contains compliance text anywhere
+    const htmlLower = html.toLowerCase();
+    if (htmlLower.includes('ulez')) {
+      // Check for explicit compliant/non-compliant text
+      data.ulezCompliant = htmlLower.includes('ulez compliant') ||
+                           htmlLower.includes('ulez: compliant') ||
+                           htmlLower.includes('ulez: yes');
+      // Only show non-compliant if explicitly stated
+      if (!data.ulezCompliant && (htmlLower.includes('ulez not compliant') ||
+                                   htmlLower.includes('ulez: no') ||
+                                   htmlLower.includes('not ulez compliant'))) {
+        data.ulezCompliant = false;
+      } else if (!data.ulezCompliant) {
+        // Don't show ULEZ at all if we can't determine status
+        data.ulezCompliant = undefined;
+      }
+    }
 
-    const cazStr = extractField('CAZ') || extractField('Clean Air Zone');
-    data.cazCompliant =
-      cazStr?.toLowerCase().includes('yes') ||
-      cazStr?.toLowerCase().includes('compliant');
+    if (htmlLower.includes('caz')) {
+      data.cazCompliant = htmlLower.includes('caz compliant') ||
+                          htmlLower.includes('caz: compliant') ||
+                          htmlLower.includes('caz: yes');
+      if (!data.cazCompliant && (htmlLower.includes('caz not compliant') ||
+                                  htmlLower.includes('caz: no') ||
+                                  htmlLower.includes('not caz compliant'))) {
+        data.cazCompliant = false;
+      } else if (!data.cazCompliant) {
+        data.cazCompliant = undefined;
+      }
+    }
 
     // Market data
     data.previousPrice =
