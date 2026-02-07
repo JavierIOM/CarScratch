@@ -9,10 +9,11 @@ const { extras } = Astro.props;
 
 // Check if we have any meaningful data to show
 const hasPerformance = extras.bhp || extras.topSpeed || extras.zeroToSixty;
+const hasFuelEconomy = extras.fuelEconomyMpg || extras.fuelEconomyUrban || extras.fuelEconomyExtraUrban;
 const hasCompliance = extras.ulezCompliant !== undefined || extras.cazCompliant !== undefined || extras.insuranceGroup;
-const hasMarket = extras.previousPrice || extras.previousMileage;
+const hasMarket = extras.costWhenNew || extras.previousPrice || extras.previousMileage;
 const hasIoM = extras.previousUKRegistration || extras.dateOfFirstRegistrationIOM || extras.modelVariant || extras.category || extras.iomModel || extras.wheelPlan;
-const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasIoM || extras.bodyStyle || extras.registrationLocation;
+const hasAnyData = hasPerformance || hasFuelEconomy || hasCompliance || hasMarket || hasIoM || extras.bodyStyle || extras.registrationLocation;
 ---
 
 {hasAnyData && (
@@ -46,6 +47,28 @@ const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasIoM || ext
         <div>
           <dt class="text-sm text-slate-500 mb-1">0-60 MPH</dt>
           <dd class="font-medium">{extras.zeroToSixty}</dd>
+        </div>
+      )}
+
+      {/* Fuel economy */}
+      {extras.fuelEconomyMpg && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Combined MPG</dt>
+          <dd class="font-medium">{extras.fuelEconomyMpg}</dd>
+        </div>
+      )}
+
+      {extras.fuelEconomyUrban && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Urban MPG</dt>
+          <dd class="font-medium">{extras.fuelEconomyUrban}</dd>
+        </div>
+      )}
+
+      {extras.fuelEconomyExtraUrban && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Extra Urban MPG</dt>
+          <dd class="font-medium">{extras.fuelEconomyExtraUrban}</dd>
         </div>
       )}
 
@@ -91,6 +114,13 @@ const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasIoM || ext
       )}
 
       {/* Market data */}
+      {extras.costWhenNew && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Cost When New</dt>
+          <dd class="font-medium text-green-400">{extras.costWhenNew}</dd>
+        </div>
+      )}
+
       {extras.previousPrice && (
         <div>
           <dt class="text-sm text-slate-500 mb-1">Previously Advertised</dt>
