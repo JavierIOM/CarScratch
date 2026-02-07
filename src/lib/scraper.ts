@@ -24,13 +24,7 @@ export interface ScrapedVehicleData {
   ulezCompliant?: boolean;
   cazCompliant?: boolean;
 
-  // Fuel economy
-  fuelEconomyMpg?: string;
-  fuelEconomyUrban?: string;
-  fuelEconomyExtraUrban?: string;
-
   // Market data
-  costWhenNew?: string;
   previousPrice?: string;
   previousMileage?: string;
 
@@ -214,25 +208,7 @@ export async function scrapeTotalCarCheck(
       }
     }
 
-    // Fuel economy
-    data.fuelEconomyMpg =
-      extractField('Combined MPG') ||
-      extractField('Fuel Economy') ||
-      extractField('MPG');
-    data.fuelEconomyUrban =
-      extractField('Urban MPG') ||
-      extractField('Urban');
-    data.fuelEconomyExtraUrban =
-      extractField('Extra Urban MPG') ||
-      extractField('Extra Urban') ||
-      extractField('Motorway MPG');
-
     // Market data
-    data.costWhenNew =
-      extractField('Cost When New') ||
-      extractField('Price When New') ||
-      extractField('New Price') ||
-      extractField('List Price');
     data.previousPrice =
       extractField('Previously Seen Price') ||
       extractField('Price') ||

@@ -59,13 +59,7 @@ export interface ScrapedExtras {
   ulezCompliant?: boolean;
   cazCompliant?: boolean;
 
-  // Fuel economy
-  fuelEconomyMpg?: string;
-  fuelEconomyUrban?: string;
-  fuelEconomyExtraUrban?: string;
-
   // Market data
-  costWhenNew?: string;
   previousPrice?: string;
   previousMileage?: string;
 
