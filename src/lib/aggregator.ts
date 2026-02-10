@@ -300,6 +300,7 @@ async function getUKVehicleInfo(normalized: string): Promise<VehicleInfo> {
         previousPrice: sanitizePrice(scrapedData.previousPrice),
         previousMileage: sanitizeScrapedString(scrapedData.previousMileage, 30),
         bodyStyle: sanitizeScrapedString(scrapedData.bodyStyle, 50),
+        transmission: sanitizeScrapedString(scrapedData.transmission, 30),
         registrationLocation: sanitizeScrapedString(scrapedData.registrationLocation, 50),
         sources: scrapedData.scrapedFrom ? [scrapedData.scrapedFrom] : [],
       };

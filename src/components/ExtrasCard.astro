@@ -12,7 +12,7 @@ const hasPerformance = extras.bhp || extras.topSpeed || extras.zeroToSixty;
 const hasCompliance = extras.ulezCompliant !== undefined || extras.cazCompliant !== undefined || extras.insuranceGroup;
 const hasMarket = extras.previousPrice || extras.previousMileage;
 const hasIoM = extras.previousUKRegistration || extras.dateOfFirstRegistrationIOM || extras.modelVariant || extras.category || extras.iomModel || extras.wheelPlan;
-const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasIoM || extras.bodyStyle || extras.registrationLocation;
+const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasIoM || extras.bodyStyle || extras.transmission || extras.registrationLocation;
 ---
 
 {hasAnyData && (
@@ -54,6 +54,13 @@ const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasIoM || ext
         <div>
           <dt class="text-sm text-slate-500 mb-1">Body Style</dt>
           <dd class="font-medium capitalize">{extras.bodyStyle.toLowerCase()}</dd>
+        </div>
+      )}
+
+      {extras.transmission && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Transmission</dt>
+          <dd class="font-medium capitalize">{extras.transmission.toLowerCase()}</dd>
         </div>
       )}
 

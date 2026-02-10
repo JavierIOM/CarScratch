@@ -10,6 +10,7 @@ export interface ScrapedVehicleData {
   fuelType?: string;
   engineSize?: string;
   euroStatus?: string;
+  transmission?: string;
   yearOfManufacture?: number;
 
   // Performance
@@ -147,6 +148,10 @@ export async function scrapeTotalCarCheck(
     data.fuelType = extractField('Fuel Type') || extractField('Fuel');
     data.engineSize = extractField('Engine Size') || extractField('Engine');
     data.euroStatus = extractField('Euro Status') || extractField('Euro');
+    data.transmission =
+      extractField('Transmission') ||
+      extractField('Gearbox') ||
+      extractField('Gears');
 
     // Performance
     const bhpStr = extractField('BHP') || extractField('Power');

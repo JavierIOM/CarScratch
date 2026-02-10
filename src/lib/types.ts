@@ -65,6 +65,7 @@ export interface ScrapedExtras {
 
   // Additional details
   bodyStyle?: string;
+  transmission?: string;
   registrationLocation?: string;
 
   // Isle of Man specific
