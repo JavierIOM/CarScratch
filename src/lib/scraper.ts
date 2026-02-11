@@ -72,26 +72,27 @@ export async function scrapeTotalCarCheck(
   try {
     await rateLimit();
 
-    const url = `https://www.checkcardetails.co.uk/cardetails/${encodeURIComponent(normalized)}`;
+    const targetUrl = `https://www.checkcardetails.co.uk/cardetails/${encodeURIComponent(normalized)}`;
+    const apiKey = import.meta.env.SCRAPER_API_KEY;
 
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-        Accept:
-          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-        'Accept-Encoding': 'gzip, deflate, br',
-        Connection: 'keep-alive',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Sec-Fetch-User': '?1',
-        'Upgrade-Insecure-Requests': '1',
-      },
-    });
+    // Route through ScraperAPI proxy if key is available, otherwise try direct
+    const url = apiKey
+      ? `https://api.scraperapi.com?api_key=${apiKey}&url=${encodeURIComponent(targetUrl)}`
+      : targetUrl;
 
-    console.log(`[Scraper] CheckCarDetails status: ${response.status} for ${normalized}`);
+    const headers: Record<string, string> = apiKey
+      ? {} // ScraperAPI handles headers
+      : {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+          Accept:
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
+        };
+
+    const response = await fetch(url, { headers });
+
+    console.log(`[Scraper] CheckCarDetails status: ${response.status} for ${normalized} (proxy: ${!!apiKey})`);
 
     if (!response.ok) {
       console.error(`[Scraper] CheckCarDetails returned ${response.status}`);
