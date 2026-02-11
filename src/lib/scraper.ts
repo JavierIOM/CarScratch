@@ -91,12 +91,15 @@ export async function scrapeTotalCarCheck(
       },
     });
 
+    console.log(`[Scraper] CheckCarDetails status: ${response.status} for ${normalized}`);
+
     if (!response.ok) {
-      console.error(`CheckCarDetails returned ${response.status}`);
+      console.error(`[Scraper] CheckCarDetails returned ${response.status}`);
       return null;
     }
 
     const html = await response.text();
+    console.log(`[Scraper] HTML length: ${html.length} chars`);
     const $ = cheerio.load(html);
 
     // Check if we got a valid result page
@@ -208,6 +211,10 @@ export async function scrapeTotalCarCheck(
     data.registrationLocation =
       extractField('Registration Place') ||
       extractField('Registration Location');
+
+    // Log extracted fields for debugging
+    const fields = Object.entries(data).filter(([k, v]) => v !== undefined && k !== 'scrapedFrom' && k !== 'scrapedAt');
+    console.log(`[Scraper] Extracted ${fields.length} fields:`, fields.map(([k, v]) => `${k}=${v}`).join(', '));
 
     // Cache the result
     cache.set(normalized, { data, timestamp: Date.now() });
