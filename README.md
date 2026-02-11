@@ -49,7 +49,7 @@ CarScratch is a web application that aggregates vehicle information from multipl
 |--------|--------------|--------|
 | DVLA Vehicle Enquiry API | Official UK vehicle data (make, model, colour, tax, MOT status) | Active |
 | MOT History API | Official MOT test history, mileage readings, defects | Active |
-| TotalCarCheck | Vehicle specs, performance, insurance group, ULEZ/CAZ, market data | Active (scraping) |
+| CheckCarDetails | Vehicle specs, performance, transmission, insurance group, ULEZ | Active (scraping) |
 | gov.im | Isle of Man vehicle registration data | Active (direct HTTP) |
 | IOM Auction Site | IoM auction history and hammer prices | Active (manual updates) |
 

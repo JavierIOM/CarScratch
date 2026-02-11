@@ -72,7 +72,7 @@ export async function scrapeTotalCarCheck(
   try {
     await rateLimit();
 
-    const url = `https://totalcarcheck.co.uk/FreeCheck?regno=${encodeURIComponent(normalized)}`;
+    const url = `https://www.checkcardetails.co.uk/cardetails/${encodeURIComponent(normalized)}`;
 
     const response = await fetch(url, {
       headers: {
@@ -82,19 +82,17 @@ export async function scrapeTotalCarCheck(
           'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
         'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
         'Accept-Encoding': 'gzip, deflate, br',
-        'Cache-Control': 'no-cache',
         Connection: 'keep-alive',
-        Referer: 'https://totalcarcheck.co.uk/',
         'Sec-Fetch-Dest': 'document',
         'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-Site': 'none',
         'Sec-Fetch-User': '?1',
         'Upgrade-Insecure-Requests': '1',
       },
     });
 
     if (!response.ok) {
-      console.error(`TotalCarCheck returned ${response.status}`);
+      console.error(`CheckCarDetails returned ${response.status}`);
       return null;
     }
 
@@ -104,76 +102,85 @@ export async function scrapeTotalCarCheck(
     // Check if we got a valid result page
     if (
       html.includes('No vehicle found') ||
-      html.includes('Please enter a valid')
+      html.includes('Please enter a valid') ||
+      html.includes('Vehicle not found')
     ) {
       return null;
     }
 
     const data: ScrapedVehicleData = {
-      scrapedFrom: 'totalcarcheck.co.uk',
+      scrapedFrom: 'checkcardetails.co.uk',
       scrapedAt: new Date().toISOString(),
     };
 
-    // Helper to extract text after a label
+    // Helper: extract value from table rows where label is in first td, value in second td
     const extractField = (label: string): string | undefined => {
-      // Try finding in various formats
-      const patterns = [
-        `h4:contains("${label}")`,
-        `strong:contains("${label}")`,
-        `td:contains("${label}")`,
-        `th:contains("${label}")`,
-      ];
+      let result: string | undefined;
 
-      for (const pattern of patterns) {
-        const element = $(pattern).first();
-        if (element.length) {
-          // Get next sibling or parent's next element
-          const next = element.next();
-          if (next.length && next.text().trim()) {
-            return next.text().trim();
+      // CheckCarDetails uses table rows with label in first td, value in td.text-right
+      $('table tr, table tbody tr').each((_, row) => {
+        if (result) return;
+        const cells = $(row).find('td');
+        if (cells.length >= 2) {
+          const cellLabel = $(cells[0]).text().trim();
+          if (cellLabel.toLowerCase() === label.toLowerCase()) {
+            const value = $(cells[1]).text().trim();
+            if (value && value !== '-' && value !== 'N/A') {
+              result = value;
+            }
           }
-          // Try getting text from parent
-          const parent = element.parent();
-          const text = parent.text().replace(label, '').trim();
-          if (text) return text;
         }
-      }
+      });
 
-      // Try regex on full HTML for common patterns
-      const regex = new RegExp(`${label}[:\\s]*([^<]+)`, 'i');
-      const match = html.match(regex);
-      if (match && match[1]) {
-        return match[1].trim();
-      }
+      if (result) return result;
 
-      return undefined;
+      // Fallback: try th/td pairs
+      $('table tr').each((_, row) => {
+        if (result) return;
+        const th = $(row).find('th').first();
+        const td = $(row).find('td').first();
+        if (th.length && td.length) {
+          if (th.text().trim().toLowerCase() === label.toLowerCase()) {
+            const value = td.text().trim();
+            if (value && value !== '-' && value !== 'N/A') {
+              result = value;
+            }
+          }
+        }
+      });
+
+      return result;
     };
 
     // Extract all the fields
-    data.manufacturer = extractField('Manufacturer') || extractField('Make');
+    data.manufacturer = extractField('Make') || extractField('Manufacturer');
     data.model = extractField('Model');
+    data.modelDetail = extractField('Model Variant') || extractField('Description');
     data.colour = extractField('Colour') || extractField('Color');
     data.bodyStyle = extractField('Body Style') || extractField('Body Type');
     data.fuelType = extractField('Fuel Type') || extractField('Fuel');
-    data.engineSize = extractField('Engine Size') || extractField('Engine');
+    data.engineSize = extractField('Engine') || extractField('Engine Size');
     data.euroStatus = extractField('Euro Status') || extractField('Euro');
     data.transmission =
       extractField('Transmission') ||
-      extractField('Gearbox') ||
-      extractField('Gears');
+      extractField('Gearbox');
 
-    // Performance
-    const bhpStr = extractField('BHP') || extractField('Power');
-    if (bhpStr) {
-      const bhpMatch = bhpStr.match(/(\d+)/);
+    // Performance - BHP (may be in format "123 KW / 167 BHP")
+    const powerStr = extractField('Power') || extractField('BHP');
+    if (powerStr) {
+      const bhpMatch = powerStr.match(/(\d+)\s*BHP/i) || powerStr.match(/(\d+)/);
       if (bhpMatch) data.bhp = parseInt(bhpMatch[1], 10);
     }
 
-    data.topSpeed = extractField('Top Speed');
+    const topSpeedStr = extractField('Max Speed') || extractField('Top Speed');
+    if (topSpeedStr) {
+      data.topSpeed = topSpeedStr;
+    }
+
     data.zeroToSixty =
+      extractField('0 to 60 MPH') ||
       extractField('0-60') ||
-      extractField('0-62') ||
-      extractField('Acceleration');
+      extractField('0-62');
 
     // Year
     const yearStr = extractField('Year of Manufacture') || extractField('Year');
@@ -185,63 +192,29 @@ export async function scrapeTotalCarCheck(
     // Status
     data.insuranceGroup =
       extractField('Insurance Group') || extractField('Insurance');
-    data.motStatus = extractField('MOT Status') || extractField('MOT');
-    data.taxStatus =
-      extractField('Road Tax Status') ||
-      extractField('Tax Status') ||
-      extractField('Tax');
 
-    // ULEZ/CAZ - check if page contains compliance text anywhere
-    const htmlLower = html.toLowerCase();
-    if (htmlLower.includes('ulez')) {
-      // Check for explicit compliant/non-compliant text
-      data.ulezCompliant = htmlLower.includes('ulez compliant') ||
-                           htmlLower.includes('ulez: compliant') ||
-                           htmlLower.includes('ulez: yes');
-      // Only show non-compliant if explicitly stated
-      if (!data.ulezCompliant && (htmlLower.includes('ulez not compliant') ||
-                                   htmlLower.includes('ulez: no') ||
-                                   htmlLower.includes('not ulez compliant'))) {
+    // ULEZ compliance - checkcardetails shows "Yes" or "No"
+    const ulezStr = extractField('ULEZ Compliant') || extractField('ULEZ');
+    if (ulezStr) {
+      const lower = ulezStr.toLowerCase();
+      if (lower === 'yes' || lower.includes('compliant')) {
+        data.ulezCompliant = true;
+      } else if (lower === 'no' || lower.includes('not compliant')) {
         data.ulezCompliant = false;
-      } else if (!data.ulezCompliant) {
-        // Don't show ULEZ at all if we can't determine status
-        data.ulezCompliant = undefined;
       }
     }
-
-    if (htmlLower.includes('caz')) {
-      data.cazCompliant = htmlLower.includes('caz compliant') ||
-                          htmlLower.includes('caz: compliant') ||
-                          htmlLower.includes('caz: yes');
-      if (!data.cazCompliant && (htmlLower.includes('caz not compliant') ||
-                                  htmlLower.includes('caz: no') ||
-                                  htmlLower.includes('not caz compliant'))) {
-        data.cazCompliant = false;
-      } else if (!data.cazCompliant) {
-        data.cazCompliant = undefined;
-      }
-    }
-
-    // Market data
-    data.previousPrice =
-      extractField('Previously Seen Price') ||
-      extractField('Price') ||
-      extractField('Advertised Price');
-    data.previousMileage =
-      extractField('Previously Seen Mileage') ||
-      extractField('Advertised Mileage');
 
     // Location
     data.registrationLocation =
-      extractField('Registration Location') ||
-      extractField('Registered Location');
+      extractField('Registration Place') ||
+      extractField('Registration Location');
 
     // Cache the result
     cache.set(normalized, { data, timestamp: Date.now() });
 
     return data;
   } catch (error) {
-    console.error('Error scraping TotalCarCheck:', error);
+    console.error('Error scraping CheckCarDetails:', error);
     return null;
   }
 }
