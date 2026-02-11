@@ -301,7 +301,14 @@ async function getUKVehicleInfo(normalized: string): Promise<VehicleInfo> {
         previousMileage: sanitizeScrapedString(scrapedData.previousMileage, 30),
         bodyStyle: sanitizeScrapedString(scrapedData.bodyStyle, 50),
         transmission: sanitizeScrapedString(scrapedData.transmission, 30),
+        driveType: sanitizeScrapedString(scrapedData.driveType, 30),
+        maxTorque: sanitizeScrapedString(scrapedData.maxTorque, 30),
         registrationLocation: sanitizeScrapedString(scrapedData.registrationLocation, 50),
+        fuelEconomyUrban: sanitizeScrapedString(scrapedData.fuelEconomyUrban, 30),
+        fuelEconomyExtraUrban: sanitizeScrapedString(scrapedData.fuelEconomyExtraUrban, 30),
+        fuelEconomyCombined: sanitizeScrapedString(scrapedData.fuelEconomyCombined, 30),
+        roadTax12Month: sanitizeScrapedString(scrapedData.roadTax12Month, 30),
+        roadTax6Month: sanitizeScrapedString(scrapedData.roadTax6Month, 30),
         sources: scrapedData.scrapedFrom ? [scrapedData.scrapedFrom] : [],
       };
     }

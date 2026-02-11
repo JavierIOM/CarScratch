@@ -8,11 +8,13 @@ interface Props {
 const { extras } = Astro.props;
 
 // Check if we have any meaningful data to show
-const hasPerformance = extras.bhp || extras.topSpeed || extras.zeroToSixty;
+const hasPerformance = extras.bhp || extras.topSpeed || extras.zeroToSixty || extras.maxTorque;
 const hasCompliance = extras.ulezCompliant !== undefined || extras.cazCompliant !== undefined || extras.insuranceGroup;
 const hasMarket = extras.previousPrice || extras.previousMileage;
+const hasFuelEconomy = extras.fuelEconomyUrban || extras.fuelEconomyExtraUrban || extras.fuelEconomyCombined;
+const hasRoadTax = extras.roadTax12Month || extras.roadTax6Month;
 const hasIoM = extras.previousUKRegistration || extras.dateOfFirstRegistrationIOM || extras.modelVariant || extras.category || extras.iomModel || extras.wheelPlan;
-const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasIoM || extras.bodyStyle || extras.transmission || extras.registrationLocation;
+const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasFuelEconomy || hasRoadTax || hasIoM || extras.bodyStyle || extras.transmission || extras.driveType || extras.registrationLocation;
 ---
 
 {hasAnyData && (
@@ -49,6 +51,13 @@ const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasIoM || ext
         </div>
       )}
 
+      {extras.maxTorque && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Max Torque</dt>
+          <dd class="font-medium">{extras.maxTorque}</dd>
+        </div>
+      )}
+
       {/* Body & location */}
       {extras.bodyStyle && (
         <div>
@@ -61,6 +70,13 @@ const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasIoM || ext
         <div>
           <dt class="text-sm text-slate-500 mb-1">Transmission</dt>
           <dd class="font-medium capitalize">{extras.transmission.toLowerCase()}</dd>
+        </div>
+      )}
+
+      {extras.driveType && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Drive Type</dt>
+          <dd class="font-medium">{extras.driveType}</dd>
         </div>
       )}
 
@@ -94,6 +110,43 @@ const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasIoM || ext
           <dd class={`font-medium ${extras.cazCompliant ? 'text-green-400' : 'text-red-400'}`}>
             {extras.cazCompliant ? 'Yes' : 'No'}
           </dd>
+        </div>
+      )}
+
+      {/* Fuel economy */}
+      {extras.fuelEconomyUrban && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">MPG (Urban)</dt>
+          <dd class="font-medium">{extras.fuelEconomyUrban}</dd>
+        </div>
+      )}
+
+      {extras.fuelEconomyExtraUrban && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">MPG (Extra Urban)</dt>
+          <dd class="font-medium">{extras.fuelEconomyExtraUrban}</dd>
+        </div>
+      )}
+
+      {extras.fuelEconomyCombined && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">MPG (Combined)</dt>
+          <dd class="font-medium">{extras.fuelEconomyCombined}</dd>
+        </div>
+      )}
+
+      {/* Road tax */}
+      {extras.roadTax12Month && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Road Tax (12 months)</dt>
+          <dd class="font-medium">{extras.roadTax12Month}</dd>
+        </div>
+      )}
+
+      {extras.roadTax6Month && (
+        <div>
+          <dt class="text-sm text-slate-500 mb-1">Road Tax (6 months)</dt>
+          <dd class="font-medium">{extras.roadTax6Month}</dd>
         </div>
       )}
 

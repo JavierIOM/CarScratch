@@ -17,6 +17,17 @@ export interface ScrapedVehicleData {
   bhp?: number;
   topSpeed?: string;
   zeroToSixty?: string;
+  maxTorque?: string;
+  driveType?: string;
+
+  // Fuel economy
+  fuelEconomyUrban?: string;
+  fuelEconomyExtraUrban?: string;
+  fuelEconomyCombined?: string;
+
+  // Road tax
+  roadTax12Month?: string;
+  roadTax6Month?: string;
 
   // Status
   insuranceGroup?: string;
@@ -207,6 +218,27 @@ export async function scrapeTotalCarCheck(
         data.ulezCompliant = false;
       }
     }
+
+    // Drive type (FWD/RWD/AWD)
+    data.driveType = extractField('Drive type') || extractField('Drive Type');
+
+    // Max torque
+    data.maxTorque = extractField('Max torque') || extractField('Max Torque') || extractField('Torque');
+
+    // Fuel economy (MPG figures)
+    data.fuelEconomyUrban =
+      extractField('Urban') ||
+      extractField('Urban Driving around towns and cities');
+    data.fuelEconomyExtraUrban =
+      extractField('Extra Urban') ||
+      extractField('Extra Urban Driving in towns and on faster A-roads');
+    data.fuelEconomyCombined =
+      extractField('Combined') ||
+      extractField('Combined A mix of urban and extra urban driving');
+
+    // Road tax costs
+    data.roadTax12Month = extractField('Tax 12 Months Cost') || extractField('Tax 12 Months');
+    data.roadTax6Month = extractField('Tax 6 Months Cost') || extractField('Tax 6 Months');
 
     // Location
     data.registrationLocation =

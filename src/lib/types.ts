@@ -66,7 +66,18 @@ export interface ScrapedExtras {
   // Additional details
   bodyStyle?: string;
   transmission?: string;
+  driveType?: string;
+  maxTorque?: string;
   registrationLocation?: string;
+
+  // Fuel economy
+  fuelEconomyUrban?: string;
+  fuelEconomyExtraUrban?: string;
+  fuelEconomyCombined?: string;
+
+  // Road tax
+  roadTax12Month?: string;
+  roadTax6Month?: string;
 
   // Isle of Man specific
   previousUKRegistration?: string;
