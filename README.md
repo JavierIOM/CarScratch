@@ -26,7 +26,9 @@ CarScratch is a web application that aggregates vehicle information from multipl
 - **Tax Status** - Current tax status and expiry date
 - **MOT History** - Full MOT test history with pass/fail results, advisories, and defects
 - **Mileage Tracking** - Visual mileage history chart with yearly averages (deduplicated for accuracy)
-- **Performance Data** - BHP, top speed, 0-60 times (where available)
+- **Performance Data** - BHP, top speed, 0-60 times, max torque, drive type (where available)
+- **Fuel Economy** - Urban, extra-urban, and combined MPG figures
+- **Road Tax Costs** - 12 month and 6 month road tax rates
 - **Insurance Group** - Insurance group rating
 - **ULEZ/CAZ Compliance** - London ULEZ and Clean Air Zone compliance status
 - **Auction History** - Shows if a vehicle has appeared in IOM auctions with hammer prices
@@ -49,7 +51,7 @@ CarScratch is a web application that aggregates vehicle information from multipl
 |--------|--------------|--------|
 | DVLA Vehicle Enquiry API | Official UK vehicle data (make, model, colour, tax, MOT status) | Active |
 | MOT History API | Official MOT test history, mileage readings, defects | Active |
-| CheckCarDetails | Vehicle specs, performance, transmission, insurance group, ULEZ | Active (scraping) |
+| CheckCarDetails | Specs, performance, fuel economy, road tax, transmission, ULEZ | Active (via ScraperAPI) |
 | gov.im | Isle of Man vehicle registration data | Active (direct HTTP) |
 | IOM Auction Site | IoM auction history and hammer prices | Active (manual updates) |
 
@@ -83,6 +85,9 @@ MOT_CLIENT_ID=your_mot_client_id
 MOT_CLIENT_SECRET=your_mot_client_secret
 MOT_API_KEY=your_mot_api_key
 MOT_TENANT_ID=your_mot_tenant_id
+
+# Scraping proxy (free tier: 1000 req/month)
+SCRAPER_API_KEY=your_scraperapi_key
 ```
 
 Set these in your Netlify dashboard under **Site Settings > Environment Variables**.
@@ -176,4 +181,4 @@ Built by [JavierIOM](https://github.com/JavierIOM)
 
 ---
 
-**Current Version:** v1.4.2
+**Current Version:** v2.0.0
