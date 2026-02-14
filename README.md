@@ -33,6 +33,8 @@ CarScratch is a web application that aggregates vehicle information from multipl
 - **ULEZ/CAZ Compliance** - London ULEZ and Clean Air Zone compliance status
 - **Auction History** - Shows if a vehicle has appeared in IOM auctions with hammer prices
 - **Isle of Man Support** - Native support for Manx registrations via gov.im
+- **Save PDF** - Download a clean PDF summary of any vehicle lookup results
+- **IoM Vehicle Duty** - Correct Isle of Man road tax calculation (CO2 bands post-2010, engine capacity pre-2010, veteran rate)
 - **Insurance Check Link** - Quick link to askMID to verify vehicle insurance status
 - **Smart Plate Detection** - Automatically detects UK vs Isle of Man plates with visual badge indicator
 - **Smart Plate Formatting** - Correctly formats all UK plate types (current, prefix, suffix, dateless)
@@ -181,4 +183,4 @@ Built by [JavierIOM](https://github.com/JavierIOM)
 
 ---
 
-**Current Version:** v2.0.0
+**Current Version:** v2.1.0
