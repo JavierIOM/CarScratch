@@ -76,7 +76,9 @@ const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasFuelEconom
       {extras.driveType && (
         <div>
           <dt class="text-sm text-slate-500 mb-1">Drive Type</dt>
-          <dd class="font-medium">{extras.driveType}</dd>
+          <dd class="font-medium">{
+            { '4x2': '2WD (Front or Rear)', '4x4': '4WD (All Wheel Drive)', 'fwd': 'Front Wheel Drive', 'rwd': 'Rear Wheel Drive', 'awd': 'All Wheel Drive' }[extras.driveType.toLowerCase()] || extras.driveType
+          }</dd>
         </div>
       )}
 
