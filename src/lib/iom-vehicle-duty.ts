@@ -1,6 +1,6 @@
 /**
  * Isle of Man Vehicle Duty calculator
- * Based on Road Vehicles (Registration and Licensing) (Amendment) Order 2023
+ * Based on Vehicle Duty Order 2023 (SD 2023/0063)
  * https://www.legislation.gov.im/cms/images/LEGISLATION/SUBORDINATE/2023/2023-0063/2023-0063.pdf
  */
 
@@ -12,7 +12,15 @@ interface DutyBand {
   duty6Month: number;
 }
 
-const IOM_DUTY_BANDS: DutyBand[] = [
+interface EngineCapacityBand {
+  minCC: number;
+  maxCC: number; // Infinity for the top band
+  duty12Month: number;
+  duty6Month: number;
+}
+
+// Article 4, paragraph (1) - CO2 emission bands
+const IOM_CO2_BANDS: DutyBand[] = [
   { band: 'ZEV', minCO2: 0, maxCO2: 0, duty12Month: 65, duty6Month: 39 },
   { band: 'A', minCO2: 1, maxCO2: 50, duty12Month: 65, duty6Month: 39 },
   { band: 'B', minCO2: 51, maxCO2: 75, duty12Month: 65, duty6Month: 39 },
@@ -31,6 +39,21 @@ const IOM_DUTY_BANDS: DutyBand[] = [
   { band: 'O', minCO2: 256, maxCO2: Infinity, duty12Month: 724, duty6Month: 368 },
 ];
 
+// Schedule 1, paragraph 3 - Category B vehicles by engine capacity
+// Fallback for vehicles without CO2 data (e.g. pre-2001 registration)
+const IOM_ENGINE_BANDS: EngineCapacityBand[] = [
+  { minCC: 0, maxCC: 1000, duty12Month: 65, duty6Month: 39 },
+  { minCC: 1001, maxCC: 1200, duty12Month: 130, duty6Month: 71 },
+  { minCC: 1201, maxCC: 1800, duty12Month: 203, duty6Month: 108 },
+  { minCC: 1801, maxCC: 2500, duty12Month: 288, duty6Month: 150 },
+  { minCC: 2501, maxCC: 3500, duty12Month: 467, duty6Month: 240 },
+  { minCC: 3501, maxCC: 5000, duty12Month: 576, duty6Month: 294 },
+  { minCC: 5001, maxCC: Infinity, duty12Month: 612, duty6Month: 312 },
+];
+
+// Schedule 1, paragraph 1 - Veteran vehicles (30+ years old)
+const VETERAN_DUTY = 28;
+
 export interface IOMDutyResult {
   band: string;
   duty12Month: string;
@@ -39,20 +62,53 @@ export interface IOMDutyResult {
 
 /**
  * Calculate Isle of Man vehicle duty from CO2 emissions
- * Returns null if CO2 value is not available
+ * Falls back to engine capacity if CO2 is not available
+ * Veteran vehicles (30+ years) get a flat rate of £28
  */
-export function calculateIOMDuty(co2Emissions: number | undefined): IOMDutyResult | null {
-  if (co2Emissions === undefined || co2Emissions === null) return null;
+export function calculateIOMDuty(
+  co2Emissions: number | undefined,
+  engineCapacityCC?: number,
+  yearOfManufacture?: number
+): IOMDutyResult | null {
+  // Veteran vehicles: 30+ years old, flat rate £28
+  if (yearOfManufacture) {
+    const vehicleAge = new Date().getFullYear() - yearOfManufacture;
+    if (vehicleAge >= 30) {
+      return {
+        band: 'Veteran',
+        duty12Month: `£${VETERAN_DUTY}`,
+        duty6Month: 'N/A',
+      };
+    }
+  }
 
-  const band = IOM_DUTY_BANDS.find(
-    (b) => co2Emissions >= b.minCO2 && co2Emissions <= b.maxCO2
-  );
+  // Primary: CO2 emissions table
+  if (co2Emissions !== undefined && co2Emissions !== null) {
+    const band = IOM_CO2_BANDS.find(
+      (b) => co2Emissions >= b.minCO2 && co2Emissions <= b.maxCO2
+    );
+    if (band) {
+      return {
+        band: band.band,
+        duty12Month: `£${band.duty12Month}`,
+        duty6Month: `£${band.duty6Month}`,
+      };
+    }
+  }
 
-  if (!band) return null;
+  // Fallback: engine capacity table (Category B)
+  if (engineCapacityCC && engineCapacityCC > 0) {
+    const band = IOM_ENGINE_BANDS.find(
+      (b) => engineCapacityCC >= b.minCC && engineCapacityCC <= b.maxCC
+    );
+    if (band) {
+      return {
+        band: `${engineCapacityCC}cc`,
+        duty12Month: `£${band.duty12Month}`,
+        duty6Month: `£${band.duty6Month}`,
+      };
+    }
+  }
 
-  return {
-    band: band.band,
-    duty12Month: `£${band.duty12Month}`,
-    duty6Month: `£${band.duty6Month}`,
-  };
+  return null;
 }
