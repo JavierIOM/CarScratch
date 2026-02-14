@@ -60,15 +60,58 @@ export interface IOMDutyResult {
   duty6Month: string;
 }
 
+// The CO2 emission bands (Category A) only apply to vehicles first
+// registered on or after 1 April 2010. Older vehicles use the engine
+// capacity bands (Category B) instead.
+const CO2_CUTOFF_DATE = new Date('2010-04-01');
+
 /**
- * Calculate Isle of Man vehicle duty from CO2 emissions
- * Falls back to engine capacity if CO2 is not available
- * Veteran vehicles (30+ years) get a flat rate of £28
+ * Parse a registration date string into a Date object.
+ * Handles formats like "2010-03", "2010-03-15", "15/03/2010", "March 2010" etc.
+ */
+function parseRegistrationDate(dateStr: string | undefined): Date | null {
+  if (!dateStr) return null;
+  const trimmed = dateStr.trim();
+
+  // ISO format: "2010-03" or "2010-03-15"
+  if (/^\d{4}-\d{2}/.test(trimmed)) {
+    const d = new Date(trimmed);
+    if (!isNaN(d.getTime())) return d;
+  }
+
+  // UK format: "15/03/2010" or "03/2010"
+  const ukMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (ukMatch) {
+    return new Date(parseInt(ukMatch[3]), parseInt(ukMatch[2]) - 1, parseInt(ukMatch[1]));
+  }
+  const ukShort = trimmed.match(/^(\d{1,2})\/(\d{4})$/);
+  if (ukShort) {
+    return new Date(parseInt(ukShort[2]), parseInt(ukShort[1]) - 1, 1);
+  }
+
+  // Try extracting just a year as last resort
+  const yearMatch = trimmed.match(/(\d{4})/);
+  if (yearMatch) {
+    return new Date(parseInt(yearMatch[1]), 0, 1);
+  }
+
+  return null;
+}
+
+/**
+ * Calculate Isle of Man vehicle duty.
+ *
+ * Priority:
+ * 1. Veteran vehicles (30+ years) → flat £28
+ * 2. Registered BEFORE 1 April 2010 → engine capacity bands (Category B)
+ * 3. Registered ON/AFTER 1 April 2010 → CO2 emission bands (Category A)
+ * 4. No date known → CO2 if available, else engine capacity fallback
  */
 export function calculateIOMDuty(
   co2Emissions: number | undefined,
   engineCapacityCC?: number,
-  yearOfManufacture?: number
+  yearOfManufacture?: number,
+  firstRegistrationDate?: string
 ): IOMDutyResult | null {
   // Veteran vehicles: 30+ years old, flat rate £28
   if (yearOfManufacture) {
@@ -82,7 +125,25 @@ export function calculateIOMDuty(
     }
   }
 
-  // Primary: CO2 emissions table
+  // Determine if vehicle was registered before the CO2 cutoff
+  const regDate = parseRegistrationDate(firstRegistrationDate);
+  const isPreApril2010 = regDate ? regDate < CO2_CUTOFF_DATE : false;
+
+  // Pre-April 2010: must use engine capacity bands (Category B)
+  if (isPreApril2010 && engineCapacityCC && engineCapacityCC > 0) {
+    const band = IOM_ENGINE_BANDS.find(
+      (b) => engineCapacityCC >= b.minCC && engineCapacityCC <= b.maxCC
+    );
+    if (band) {
+      return {
+        band: `${engineCapacityCC}cc`,
+        duty12Month: `£${band.duty12Month}`,
+        duty6Month: `£${band.duty6Month}`,
+      };
+    }
+  }
+
+  // Post-April 2010 (or unknown date): use CO2 emissions table
   if (co2Emissions !== undefined && co2Emissions !== null) {
     const band = IOM_CO2_BANDS.find(
       (b) => co2Emissions >= b.minCO2 && co2Emissions <= b.maxCO2
@@ -96,7 +157,7 @@ export function calculateIOMDuty(
     }
   }
 
-  // Fallback: engine capacity table (Category B)
+  // Final fallback: engine capacity table (for vehicles with no CO2 data and no date)
   if (engineCapacityCC && engineCapacityCC > 0) {
     const band = IOM_ENGINE_BANDS.find(
       (b) => engineCapacityCC >= b.minCC && engineCapacityCC <= b.maxCC

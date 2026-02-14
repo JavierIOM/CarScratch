@@ -221,11 +221,13 @@ async function getIOMVehicleInfo(
     }
 
     // Calculate IoM road tax from CO2 emissions (UK rates don't apply to IoM)
+    // Pre-April 2010 vehicles use engine capacity bands, post use CO2 bands
     // Falls back to engine capacity for older vehicles, and veteran rate for 30+ year old cars
     const co2 = ukVehicle?.co2Emissions;
     const engineCC = ukVehicle?.engineCapacity || vehicle?.engineCapacity;
     const year = ukVehicle?.yearOfManufacture || vehicle?.yearOfManufacture;
-    const iomDuty = calculateIOMDuty(co2, engineCC, year);
+    const firstRegDate = ukVehicle?.monthOfFirstRegistration || iomData.dateOfFirstRegistration;
+    const iomDuty = calculateIOMDuty(co2, engineCC, year, firstRegDate);
 
     // Merge extras - strip UK road tax and replace with IoM rates
     const mergedExtras: ScrapedExtras = {
