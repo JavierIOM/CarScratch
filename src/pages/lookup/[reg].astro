@@ -39,6 +39,58 @@ const pageDescription = vehicle
   : `Look up vehicle information for registration ${formattedReg}. Check MOT history, tax status, mileage, and specifications.`;
 
 // Vehicle structured data for SEO
+// Build data for PDF export (only include what's needed, no sensitive data)
+const motTests = vehicleInfo.motHistory?.motTests;
+const pdfData = !vehicleInfo.error ? {
+  registration: formattedReg,
+  isManx: vehicleInfo.isManx,
+  vehicle: vehicle ? {
+    make: vehicle.make,
+    model: vehicle.model,
+    colour: vehicle.colour,
+    fuelType: vehicle.fuelType,
+    engineCapacity: vehicle.engineCapacity,
+    co2Emissions: vehicle.co2Emissions,
+    yearOfManufacture: vehicle.yearOfManufacture,
+    taxStatus: vehicle.taxStatus,
+    taxDueDate: vehicle.taxDueDate,
+    motStatus: vehicle.motStatus,
+    motExpiryDate: vehicle.motExpiryDate,
+    monthOfFirstRegistration: vehicle.monthOfFirstRegistration,
+    euroStatus: vehicle.euroStatus,
+  } : undefined,
+  extras: vehicleInfo.extras ? {
+    bhp: vehicleInfo.extras.bhp,
+    topSpeed: vehicleInfo.extras.topSpeed,
+    zeroToSixty: vehicleInfo.extras.zeroToSixty,
+    maxTorque: vehicleInfo.extras.maxTorque,
+    bodyStyle: vehicleInfo.extras.bodyStyle,
+    transmission: vehicleInfo.extras.transmission,
+    driveType: vehicleInfo.extras.driveType,
+    insuranceGroup: vehicleInfo.extras.insuranceGroup,
+    ulezCompliant: vehicleInfo.extras.ulezCompliant,
+    cazCompliant: vehicleInfo.extras.cazCompliant,
+    fuelEconomyUrban: vehicleInfo.extras.fuelEconomyUrban,
+    fuelEconomyExtraUrban: vehicleInfo.extras.fuelEconomyExtraUrban,
+    fuelEconomyCombined: vehicleInfo.extras.fuelEconomyCombined,
+    roadTax12Month: vehicleInfo.extras.roadTax12Month,
+    roadTax6Month: vehicleInfo.extras.roadTax6Month,
+    previousUKRegistration: vehicleInfo.extras.previousUKRegistration,
+    dateOfFirstRegistrationIOM: vehicleInfo.extras.dateOfFirstRegistrationIOM,
+    iomModel: vehicleInfo.extras.iomModel,
+    modelVariant: vehicleInfo.extras.modelVariant,
+  } : undefined,
+  motSummary: motTests && motTests.length > 0 ? {
+    totalTests: motTests.length,
+    latestResult: motTests[0].testResult === 'PASSED' ? 'Pass' : 'Fail',
+    latestDate: motTests[0].completedDate,
+    latestMileage: motTests[0].odometerValue ? `${motTests[0].odometerValue.toLocaleString()} ${motTests[0].odometerUnit}` : undefined,
+    earliestDate: motTests[motTests.length - 1].completedDate,
+    earliestMileage: motTests[motTests.length - 1].odometerValue ? `${motTests[motTests.length - 1].odometerValue.toLocaleString()} ${motTests[motTests.length - 1].odometerUnit}` : undefined,
+  } : undefined,
+  auction: vehicleInfo.auction,
+} : null;
+
 const vehicleSchema = vehicle ? {
   '@context': 'https://schema.org',
   '@type': 'Car',
@@ -98,12 +150,27 @@ const vehicleSchema = vehicle ? {
     ) : (
       <!-- Results -->
       <div class="space-y-6">
-        {vehicleInfo.isManx && (
+        <div class="flex items-center justify-between gap-4">
           <div class="flex items-center gap-2 text-sm">
-            <span class="px-2 py-1 bg-red-600 text-white font-medium">Isle of Man</span>
-            <span class="text-slate-400">Vehicle registered on the Isle of Man</span>
+            {vehicleInfo.isManx && (
+              <>
+                <span class="px-2 py-1 bg-red-600 text-white font-medium">Isle of Man</span>
+                <span class="text-slate-400">Vehicle registered on the Isle of Man</span>
+              </>
+            )}
           </div>
-        )}
+          <button
+            id="save-pdf-btn"
+            type="button"
+            class="flex items-center gap-2 px-4 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-slate-200 transition-colors flex-shrink-0"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 15V3m0 12l-4-4m4 4l4-4" />
+              <path d="M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17" />
+            </svg>
+            Save PDF
+          </button>
+        </div>
 
         {vehicleInfo.vehicle && (
           <VehicleCard vehicle={vehicleInfo.vehicle} isManx={vehicleInfo.isManx} />
@@ -216,4 +283,26 @@ const vehicleSchema = vehicle ? {
       </div>
     )}
   </div>
+
+  {pdfData && (
+    <script is:inline type="application/json" id="pdf-vehicle-data" set:html={JSON.stringify(pdfData)} />
+  )}
+
+  <script>
+    import { generateVehiclePDF } from '../../scripts/generate-pdf';
+
+    const btn = document.getElementById('save-pdf-btn');
+    const dataEl = document.getElementById('pdf-vehicle-data');
+
+    if (btn && dataEl) {
+      btn.addEventListener('click', () => {
+        try {
+          const data = JSON.parse(dataEl.textContent || '{}');
+          generateVehiclePDF(data);
+        } catch (e) {
+          console.error('Failed to generate PDF:', e);
+        }
+      });
+    }
+  </script>
 </Layout>
