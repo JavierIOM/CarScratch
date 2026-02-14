@@ -6,6 +6,7 @@ import { scrapeIOMVehicle, iomToVehicleData } from './iom-scraper';
 import { getDVLAVehicle } from './dvla';
 import { getMOTHistory } from './mot';
 import { checkChrystalsAuction } from './chrystals';
+import { calculateIOMDuty } from './iom-vehicle-duty';
 
 // Check if API keys are available
 const DVLA_API_KEY = import.meta.env.DVLA_API_KEY;
@@ -219,10 +220,16 @@ async function getIOMVehicleInfo(
       }
     }
 
-    // Merge extras
+    // Calculate IoM road tax from CO2 emissions (UK rates don't apply to IoM)
+    const co2 = ukVehicle?.co2Emissions;
+    const iomDuty = calculateIOMDuty(co2);
+
+    // Merge extras - strip UK road tax and replace with IoM rates
     const mergedExtras: ScrapedExtras = {
       ...ukExtras,
       ...extras,
+      roadTax12Month: iomDuty?.duty12Month,
+      roadTax6Month: iomDuty?.duty6Month,
       sources: [
         'gov.im',
         ...(ukExtras?.sources || []),
