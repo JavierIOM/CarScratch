@@ -66,12 +66,8 @@ export async function getMOTHistory(registration: string): Promise<MOTHistory | 
   const clean = registration.toUpperCase().replace(/\s/g, '');
 
   try {
-    console.log(`[MOT] Fetching history for ${clean}`);
     const token = await getAccessToken();
-    console.log(`[MOT] Got access token (${token.substring(0, 10)}...)`);
-
     const url = `${MOT_API_BASE}/registration/${clean}`;
-    console.log(`[MOT] Requesting: ${url}`);
 
     const res = await fetch(url, {
       headers: {
@@ -80,10 +76,7 @@ export async function getMOTHistory(registration: string): Promise<MOTHistory | 
       },
     });
 
-    console.log(`[MOT] Response status: ${res.status}`);
-
     if (res.status === 404) {
-      console.log(`[MOT] Vehicle not found`);
       return null;
     }
 
@@ -94,7 +87,6 @@ export async function getMOTHistory(registration: string): Promise<MOTHistory | 
     }
 
     const data = await res.json() as MOTApiResponse;
-    console.log(`[MOT] Got response with ${data.motTests?.length ?? 0} tests`);
 
     return transformResponse(data, clean);
   } catch (err) {
