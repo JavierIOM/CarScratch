@@ -1,11 +1,11 @@
 # CarScratch Robots.txt
-# https://carscratch.netlify.app
+# https://carscratch.uk
 
 User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://carscratch.netlify.app/sitemap.xml
+Sitemap: https://carscratch.uk/sitemap.xml
 
 # Disallow admin/internal paths
 Disallow: /api/
