@@ -183,4 +183,4 @@ Built by [JavierIOM](https://github.com/JavierIOM)
 
 ---
 
-**Current Version:** v2.1.0
+**Current Version:** v2.1.1
