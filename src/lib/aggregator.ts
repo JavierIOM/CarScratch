@@ -197,7 +197,10 @@ async function getIOMVehicleInfo(
       iomModel: sanitizeScrapedString(iomData.model, 50),
       modelVariant: sanitizeScrapedString(iomData.modelVariant),
       category: sanitizeScrapedString(iomData.category, 20),
-      wheelPlan: sanitizeScrapedString(iomData.wheelPlan, 30),
+      // Only store wheelPlan if it looks like a real axle configuration (e.g. "2-AXLE RIGID")
+      wheelPlan: iomData.wheelPlan?.toLowerCase().includes('axle')
+        ? sanitizeScrapedString(iomData.wheelPlan, 30)
+        : undefined,
       sources: ['gov.im'],
     };
 
