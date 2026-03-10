@@ -84,15 +84,15 @@ export async function scrapeTotalCarCheck(
     await rateLimit();
 
     const targetUrl = `https://www.checkcardetails.co.uk/cardetails/${encodeURIComponent(normalized)}`;
-    const apiKey = import.meta.env.SCRAPER_API_KEY;
+    const scrapeDoToken = import.meta.env.SCRAPE_DO_TOKEN;
 
-    // Route through ScraperAPI proxy if key is available, otherwise try direct
-    const url = apiKey
-      ? `https://api.scraperapi.com?api_key=${apiKey}&url=${encodeURIComponent(targetUrl)}`
+    // Route through scrape.do proxy if token available, otherwise try direct
+    const url = scrapeDoToken
+      ? `http://api.scrape.do/?token=${scrapeDoToken}&url=${encodeURIComponent(targetUrl)}&render=true&super=true`
       : targetUrl;
 
-    const headers: Record<string, string> = apiKey
-      ? {} // ScraperAPI handles headers
+    const headers: Record<string, string> = scrapeDoToken
+      ? {} // scrape.do handles headers
       : {
           'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
