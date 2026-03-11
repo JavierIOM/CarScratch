@@ -84,22 +84,26 @@ export async function scrapeTotalCarCheck(
     await rateLimit();
 
     const targetUrl = `https://www.checkcardetails.co.uk/cardetails/${encodeURIComponent(normalized)}`;
+    const scraperApiKey = import.meta.env.SCRAPER_API_KEY;
     const scrapeDoToken = import.meta.env.SCRAPE_DO_TOKEN;
 
-    // Route through scrape.do proxy if token available, otherwise try direct
-    const url = scrapeDoToken
-      ? `http://api.scrape.do/?token=${scrapeDoToken}&url=${encodeURIComponent(targetUrl)}&render=true&super=true`
-      : targetUrl;
+    // ScraperAPI primary → scrape.do fallback → direct
+    const url = scraperApiKey
+      ? `https://api.scraperapi.com?api_key=${scraperApiKey}&url=${encodeURIComponent(targetUrl)}`
+      : scrapeDoToken
+        ? `http://api.scrape.do/?token=${scrapeDoToken}&url=${encodeURIComponent(targetUrl)}&super=true`
+        : targetUrl;
 
-    const headers: Record<string, string> = scrapeDoToken
-      ? {} // scrape.do handles headers
-      : {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-          Accept:
-            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-          'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-        };
+    const headers: Record<string, string> =
+      scraperApiKey || scrapeDoToken
+        ? {} // proxy handles headers
+        : {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            Accept:
+              'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
+          };
 
     const response = await fetch(url, { headers });
 
