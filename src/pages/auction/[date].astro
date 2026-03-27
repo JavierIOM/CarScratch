@@ -165,16 +165,16 @@ const soldCount = lots.filter((l) => l.price !== null).length;
 
             <!-- Past appearances -->
             {sortedPast.length > 0 && (
-              <div class="border-t border-slate-700/60 pt-2 mt-1">
-                <p class="text-xs text-slate-500 mb-1">Previously listed:</p>
+              <div class="border-t border-red-800/50 pt-2 mt-1 bg-red-950/20 -mx-4 px-4 pb-2">
+                <p class="text-xs text-red-400 font-semibold mb-1 uppercase tracking-wider">Previously listed:</p>
                 <ul class="flex flex-col gap-0.5">
                   {sortedPast.map((a) => (
                     <li class="text-xs flex items-center justify-between gap-2">
-                      <span class="text-slate-400">{formatShortDate(a.date)}</span>
+                      <span class="text-red-300/80">{formatShortDate(a.date)}</span>
                       {a.price !== null ? (
                         <span class="text-green-400 font-medium">{formatPrice(a.price)}</span>
                       ) : (
-                        <span class="text-slate-500">No sale</span>
+                        <span class="text-red-400/60">No sale</span>
                       )}
                     </li>
                   ))}
