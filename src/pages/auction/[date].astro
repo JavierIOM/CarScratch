@@ -115,7 +115,8 @@ const soldCount = lots.filter((l) => l.price !== null).length;
 
         return (
           <div
-            class={`vehicle-card bg-slate-800/50 border p-4 flex flex-col gap-3 transition-colors ${sortedPast.length > 0 ? 'border-red-700/60' : 'border-slate-700'}`}
+            class="vehicle-card bg-slate-800/50 border border-slate-700 p-4 flex flex-col gap-3 transition-colors"
+            style={sortedPast.length > 0 ? 'border-color: rgb(185 28 28 / 0.6);' : ''}
             data-reg={apiReg}
           >
             <!-- Header row -->
@@ -139,7 +140,7 @@ const soldCount = lots.filter((l) => l.price !== null).length;
               </div>
               <div class="flex items-center gap-2 flex-shrink-0">
                 {sortedPast.length > 0 && (
-                  <span class="w-7 h-7 rounded-full bg-red-600 text-white font-black text-base flex items-center justify-center leading-none" title={`Listed ${sortedPast.length} time(s) before`}>!</span>
+                  <span style="width:1.75rem;height:1.75rem;border-radius:9999px;background:#dc2626;color:white;font-weight:900;font-size:1.1rem;display:flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0;" title={`Listed ${sortedPast.length} time(s) before`}>!</span>
                 )}
                 <a
                   href={`/lookup/${apiReg}`}
