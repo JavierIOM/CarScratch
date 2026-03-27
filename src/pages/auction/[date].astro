@@ -8,13 +8,18 @@ const { date } = Astro.params;
 
 if (!date) return Astro.redirect('/');
 
-const lots = (auctionData.lots as Array<{ reg: string; desc: string; date: string; price: number | null }>).filter(
-  (lot) => lot.date === date
-);
+type Lot = { reg: string; desc: string; date: string; price: number | null };
+const allLots = auctionData.lots as Lot[];
 
+const lots = allLots.filter((lot) => lot.date === date);
 if (lots.length === 0) return Astro.redirect('/');
 
-const displayDate = new Date(date + 'T00:00:00').toLocaleDateString('en-GB', {
+const auctionDate = new Date(date + 'T00:00:00');
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+const auctionPast = auctionDate < today;
+
+const displayDate = auctionDate.toLocaleDateString('en-GB', {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
@@ -28,8 +33,26 @@ const formatReg = (reg: string) => {
 
 const cleanReg = (reg: string) => reg.toUpperCase().replace(/[\s-]/g, '');
 
+const formatPrice = (price: number) =>
+  new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 0 }).format(price);
+
+const formatShortDate = (d: string) =>
+  new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+// Build past appearances lookup: normalised reg → appearances on OTHER dates
+const pastAppearances = new Map<string, { date: string; price: number | null; desc: string }[]>();
+for (const lot of allLots) {
+  if (lot.date === date) continue;
+  const key = cleanReg(lot.reg);
+  const existing = pastAppearances.get(key) ?? [];
+  existing.push({ date: lot.date, price: lot.price, desc: lot.desc });
+  pastAppearances.set(key, existing);
+}
+
 const auctionUrl =
   'https://www.easyliveauction.com/catalogue/ffe7fe68861f0eec99cadad6b2c873bd/0af8d24542e81eb9357e7ef448a6646f/vehicle-and-equipment/';
+
+const soldCount = lots.filter((l) => l.price !== null).length;
 ---
 
 <Layout
@@ -46,6 +69,12 @@ const auctionUrl =
       </h1>
       <div class="flex flex-wrap items-center gap-4 text-sm text-slate-400">
         <span>{lots.length} vehicles</span>
+        {auctionPast && soldCount > 0 && (
+          <span class="text-green-400">{soldCount} sold</span>
+        )}
+        {auctionPast && soldCount === 0 && (
+          <span class="text-slate-500">Results pending</span>
+        )}
         <span class="text-slate-600">|</span>
         <a
           href={auctionUrl}
@@ -56,13 +85,15 @@ const auctionUrl =
           View on Easy Live Auction
         </a>
       </div>
-      <p class="text-xs text-slate-500 mt-3">
-        History and status loads automatically as you scroll. Click <strong class="text-slate-400">Full History</strong> for complete MOT records and more.
-      </p>
+      {!auctionPast && (
+        <p class="text-xs text-slate-500 mt-3">
+          History and status loads automatically as you scroll. Click <strong class="text-slate-400">Full History</strong> for complete MOT records and more.
+        </p>
+      )}
     </div>
 
     <!-- Legend -->
-    <div class="flex flex-wrap gap-3 mb-6 text-xs">
+    <div class="flex flex-wrap gap-3 mb-6 text-xs text-slate-400">
       <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span> Taxed / MOT Valid</span>
       <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span> SORN / MOT Expired</span>
       <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span> Untaxed</span>
@@ -79,6 +110,8 @@ const auctionUrl =
         const lotMatch = lot.desc.match(/^Lot (\d+)/);
         const lotNum = lotMatch ? lotMatch[1] : null;
         const descText = lot.desc.replace(/^Lot \d+ - /, '');
+        const past = pastAppearances.get(apiReg) ?? [];
+        const sortedPast = [...past].sort((a, b) => b.date.localeCompare(a.date));
 
         return (
           <div
@@ -115,16 +148,48 @@ const auctionUrl =
             <!-- Description -->
             <p class="text-sm text-slate-300 leading-snug">{descText}</p>
 
-            <!-- Status area -->
+            <!-- Auction result (post-auction only) -->
+            {auctionPast && (
+              <div>
+                {lot.price !== null ? (
+                  <span class="inline-block px-2 py-0.5 bg-green-900/60 text-green-400 border border-green-700/50 text-sm font-semibold rounded">
+                    Sold {formatPrice(lot.price)}
+                  </span>
+                ) : (
+                  <span class="inline-block px-2 py-0.5 bg-slate-700 text-slate-400 text-sm rounded">
+                    No sale
+                  </span>
+                )}
+              </div>
+            )}
+
+            <!-- Past appearances -->
+            {sortedPast.length > 0 && (
+              <div class="border-t border-slate-700/60 pt-2 mt-1">
+                <p class="text-xs text-slate-500 mb-1">Previously listed:</p>
+                <ul class="flex flex-col gap-0.5">
+                  {sortedPast.map((a) => (
+                    <li class="text-xs flex items-center justify-between gap-2">
+                      <span class="text-slate-400">{formatShortDate(a.date)}</span>
+                      {a.price !== null ? (
+                        <span class="text-green-400 font-medium">{formatPrice(a.price)}</span>
+                      ) : (
+                        <span class="text-slate-500">No sale</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <!-- Live status area (tax/MOT/mileage) -->
             <div class="status-area mt-auto">
-              <!-- Loading state -->
               <div class="status-loading flex items-center gap-2 text-xs text-slate-500">
                 <svg class="w-3 h-3 animate-spin flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                 </svg>
                 Loading status...
               </div>
-              <!-- Loaded state (hidden initially) -->
               <div class="status-data hidden flex flex-wrap gap-2 text-xs"></div>
             </div>
           </div>
@@ -136,11 +201,9 @@ const auctionUrl =
 
 <script>
   function formatDate(dateStr: string): string {
-    // DVLA dates can be YYYY-MM (no day) — pad to YYYY-MM-01 so Date parsing works
     const padded = /^\d{4}-\d{2}$/.test(dateStr) ? dateStr + '-01' : dateStr;
     const d = new Date(padded + 'T00:00:00');
     if (isNaN(d.getTime())) return dateStr;
-    // For month-only dates, show just month + year
     const monthOnly = /^\d{4}-\d{2}$/.test(dateStr);
     return d.toLocaleDateString('en-GB', {
       ...(monthOnly ? {} : { day: 'numeric' }),
@@ -204,7 +267,6 @@ const auctionUrl =
         dataEl.innerHTML = badges || '<span class="text-slate-500">No data available</span>';
       }
 
-      // Tint the card border based on overall status
       if (data.taxStatus === 'Taxed' && (data.motStatus === 'Valid' || !data.motStatus)) {
         card.classList.replace('border-slate-700', 'border-green-700/40');
       } else if (data.taxStatus === 'SORN' || data.motStatus === 'Not valid') {
@@ -219,7 +281,6 @@ const auctionUrl =
     }
   }
 
-  // Lazy-load via IntersectionObserver — loads when card enters viewport + 150px buffer
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
