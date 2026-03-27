@@ -115,7 +115,7 @@ const soldCount = lots.filter((l) => l.price !== null).length;
 
         return (
           <div
-            class="vehicle-card bg-slate-800/50 border border-slate-700 p-4 flex flex-col gap-3 transition-colors"
+            class={`vehicle-card bg-slate-800/50 border p-4 flex flex-col gap-3 transition-colors ${sortedPast.length > 0 ? 'border-red-700/60' : 'border-slate-700'}`}
             data-reg={apiReg}
           >
             <!-- Header row -->
@@ -137,12 +137,17 @@ const soldCount = lots.filter((l) => l.price !== null).length;
                   )}
                 </div>
               </div>
-              <a
-                href={`/lookup/${apiReg}`}
-                class="text-xs text-amber-400 hover:text-amber-300 border border-amber-600/40 px-2 py-1 hover:bg-amber-500/10 transition-colors whitespace-nowrap flex-shrink-0"
-              >
-                Full History
-              </a>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                {sortedPast.length > 0 && (
+                  <span class="w-7 h-7 rounded-full bg-red-600 text-white font-black text-base flex items-center justify-center leading-none" title={`Listed ${sortedPast.length} time(s) before`}>!</span>
+                )}
+                <a
+                  href={`/lookup/${apiReg}`}
+                  class="text-xs text-amber-400 hover:text-amber-300 border border-amber-600/40 px-2 py-1 hover:bg-amber-500/10 transition-colors whitespace-nowrap"
+                >
+                  Full History
+                </a>
+              </div>
             </div>
 
             <!-- Description -->
