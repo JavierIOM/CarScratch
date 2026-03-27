@@ -136,8 +136,17 @@ const auctionUrl =
 
 <script>
   function formatDate(dateStr: string): string {
-    const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    // DVLA dates can be YYYY-MM (no day) — pad to YYYY-MM-01 so Date parsing works
+    const padded = /^\d{4}-\d{2}$/.test(dateStr) ? dateStr + '-01' : dateStr;
+    const d = new Date(padded + 'T00:00:00');
+    if (isNaN(d.getTime())) return dateStr;
+    // For month-only dates, show just month + year
+    const monthOnly = /^\d{4}-\d{2}$/.test(dateStr);
+    return d.toLocaleDateString('en-GB', {
+      ...(monthOnly ? {} : { day: 'numeric' }),
+      month: 'short',
+      year: 'numeric',
+    });
   }
 
   function taxBadge(status: string | null, dueDate: string | null): string {
