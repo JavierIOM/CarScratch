@@ -1,0 +1,233 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import auctionData from '../../data/chrystals-auctions.json';
+import { isManxPlate, formatManxPlateForDisplay } from '../../lib/iom-detector';
+import { formatUKPlate } from '../../lib/plate-formatter';
+
+const { date } = Astro.params;
+
+if (!date) return Astro.redirect('/');
+
+const lots = (auctionData.lots as Array<{ reg: string; desc: string; date: string; price: number | null }>).filter(
+  (lot) => lot.date === date
+);
+
+if (lots.length === 0) return Astro.redirect('/');
+
+const displayDate = new Date(date + 'T00:00:00').toLocaleDateString('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
+const formatReg = (reg: string) => {
+  const clean = reg.toUpperCase();
+  if (isManxPlate(clean)) return formatManxPlateForDisplay(clean);
+  return formatUKPlate(clean);
+};
+
+const cleanReg = (reg: string) => reg.toUpperCase().replace(/[\s-]/g, '');
+
+const auctionUrl =
+  'https://www.easyliveauction.com/catalogue/ffe7fe68861f0eec99cadad6b2c873bd/0af8d24542e81eb9357e7ef448a6646f/vehicle-and-equipment/';
+---
+
+<Layout
+  title={`IOM Auction ${displayDate} — ${lots.length} Vehicles`}
+  description={`Full vehicle listing for the Chrystals Auctions Isle of Man sale on ${displayDate}. ${lots.length} vehicles with MOT history, tax status, and mileage.`}
+  canonicalPath={`/auction/${date}`}
+>
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <p class="text-xs text-slate-500 mb-1 uppercase tracking-wider">Chrystals Auctions, Isle of Man</p>
+      <h1 class="text-3xl font-bold mb-2">
+        Auction — <span class="text-amber-400">{displayDate}</span>
+      </h1>
+      <div class="flex flex-wrap items-center gap-4 text-sm text-slate-400">
+        <span>{lots.length} vehicles</span>
+        <span class="text-slate-600">|</span>
+        <a
+          href={auctionUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-amber-400 hover:text-amber-300 transition-colors"
+        >
+          View on Easy Live Auction
+        </a>
+      </div>
+      <p class="text-xs text-slate-500 mt-3">
+        History and status loads automatically as you scroll. Click <strong class="text-slate-400">Full History</strong> for complete MOT records and more.
+      </p>
+    </div>
+
+    <!-- Legend -->
+    <div class="flex flex-wrap gap-3 mb-6 text-xs">
+      <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span> Taxed / MOT Valid</span>
+      <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span> SORN / MOT Expired</span>
+      <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span> Untaxed</span>
+      <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-500 inline-block"></span> No Data</span>
+    </div>
+
+    <!-- Vehicle grid -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" id="auction-grid">
+      {lots.map((lot) => {
+        const rawReg = lot.reg;
+        const apiReg = cleanReg(rawReg);
+        const displayRegText = formatReg(rawReg);
+        const manx = isManxPlate(rawReg.toUpperCase());
+        const lotMatch = lot.desc.match(/^Lot (\d+)/);
+        const lotNum = lotMatch ? lotMatch[1] : null;
+        const descText = lot.desc.replace(/^Lot \d+ - /, '');
+
+        return (
+          <div
+            class="vehicle-card bg-slate-800/50 border border-slate-700 p-4 flex flex-col gap-3 transition-colors"
+            data-reg={apiReg}
+          >
+            <!-- Header row -->
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex flex-col gap-1">
+                {lotNum && (
+                  <span class="text-xs text-slate-500">Lot {lotNum}</span>
+                )}
+                <div
+                  class={`inline-flex items-center px-3 py-1 font-mono font-bold text-sm rounded ${
+                    manx
+                      ? 'bg-red-700/80 text-white border border-red-600'
+                      : 'bg-amber-400 text-black'
+                  }`}
+                >
+                  {displayRegText}
+                  {manx && (
+                    <span class="ml-2 text-xs font-normal opacity-70">IOM</span>
+                  )}
+                </div>
+              </div>
+              <a
+                href={`/lookup/${apiReg}`}
+                class="text-xs text-amber-400 hover:text-amber-300 border border-amber-600/40 px-2 py-1 hover:bg-amber-500/10 transition-colors whitespace-nowrap flex-shrink-0"
+              >
+                Full History
+              </a>
+            </div>
+
+            <!-- Description -->
+            <p class="text-sm text-slate-300 leading-snug">{descText}</p>
+
+            <!-- Status area -->
+            <div class="status-area mt-auto">
+              <!-- Loading state -->
+              <div class="status-loading flex items-center gap-2 text-xs text-slate-500">
+                <svg class="w-3 h-3 animate-spin flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                </svg>
+                Loading status...
+              </div>
+              <!-- Loaded state (hidden initially) -->
+              <div class="status-data hidden flex flex-wrap gap-2 text-xs"></div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</Layout>
+
+<script>
+  function formatDate(dateStr: string): string {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function taxBadge(status: string | null, dueDate: string | null): string {
+    if (!status) return `<span class="px-2 py-0.5 bg-slate-700 text-slate-400 rounded">Tax: No data</span>`;
+    if (status === 'Taxed') {
+      const due = dueDate ? ` until ${formatDate(dueDate)}` : '';
+      return `<span class="px-2 py-0.5 bg-green-900/60 text-green-400 rounded border border-green-700/50">Taxed${due}</span>`;
+    }
+    if (status === 'SORN') {
+      return `<span class="px-2 py-0.5 bg-red-900/60 text-red-400 rounded border border-red-700/50">SORN</span>`;
+    }
+    return `<span class="px-2 py-0.5 bg-amber-900/60 text-amber-400 rounded border border-amber-700/50">${status}</span>`;
+  }
+
+  function motBadge(status: string | null, dueDate: string | null): string {
+    if (!status || status === 'No details held by DVLA') {
+      return `<span class="px-2 py-0.5 bg-slate-700 text-slate-400 rounded">MOT: No data</span>`;
+    }
+    if (status === 'Valid') {
+      const due = dueDate ? ` exp ${formatDate(dueDate)}` : '';
+      return `<span class="px-2 py-0.5 bg-green-900/60 text-green-400 rounded border border-green-700/50">MOT${due}</span>`;
+    }
+    return `<span class="px-2 py-0.5 bg-red-900/60 text-red-400 rounded border border-red-700/50">MOT: ${status}</span>`;
+  }
+
+  function mileageBadge(mileage: number | null, unit: string | null): string {
+    if (!mileage) return '';
+    const formatted = mileage.toLocaleString('en-GB');
+    const u = unit === 'km' ? 'km' : 'mi';
+    return `<span class="px-2 py-0.5 bg-slate-700 text-slate-300 rounded">${formatted} ${u}</span>`;
+  }
+
+  async function loadVehicleStatus(card: HTMLElement) {
+    const reg = card.dataset.reg;
+    if (!reg) return;
+
+    const loadingEl = card.querySelector('.status-loading') as HTMLElement | null;
+    const dataEl = card.querySelector('.status-data') as HTMLElement | null;
+
+    try {
+      const res = await fetch(`/api/vehicle/${reg}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      if (loadingEl) loadingEl.classList.add('hidden');
+      if (dataEl) {
+        dataEl.classList.remove('hidden');
+        const badges = [
+          taxBadge(data.taxStatus, data.taxDueDate),
+          motBadge(data.motStatus, data.motDueDate),
+          mileageBadge(data.mileage, data.mileageUnit),
+        ]
+          .filter(Boolean)
+          .join('');
+        dataEl.innerHTML = badges || '<span class="text-slate-500">No data available</span>';
+      }
+
+      // Tint the card border based on overall status
+      if (data.taxStatus === 'Taxed' && (data.motStatus === 'Valid' || !data.motStatus)) {
+        card.classList.replace('border-slate-700', 'border-green-700/40');
+      } else if (data.taxStatus === 'SORN' || data.motStatus === 'Not valid') {
+        card.classList.replace('border-slate-700', 'border-red-700/40');
+      }
+    } catch {
+      if (loadingEl) loadingEl.classList.add('hidden');
+      if (dataEl) {
+        dataEl.classList.remove('hidden');
+        dataEl.innerHTML = '<span class="text-slate-500">Status unavailable</span>';
+      }
+    }
+  }
+
+  // Lazy-load via IntersectionObserver — loads when card enters viewport + 150px buffer
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const card = entry.target as HTMLElement;
+          if (!card.dataset.loaded) {
+            card.dataset.loaded = 'true';
+            observer.unobserve(card);
+            loadVehicleStatus(card);
+          }
+        }
+      });
+    },
+    { rootMargin: '150px' }
+  );
+
+  document.querySelectorAll<HTMLElement>('.vehicle-card').forEach((card) => {
+    observer.observe(card);
+  });
+</script>
