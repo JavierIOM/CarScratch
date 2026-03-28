@@ -2,6 +2,10 @@
 {
   "lastUpdated": "2026-03-28",
   "source": "https://www.chrystalsauctions.im/auctions/",
+  "auctionUrls": {
+    "2026-03-28": "https://www.easyliveauction.com/catalogue/ffe7fe68861f0eec99cadad6b2c873bd/0af8d24542e81eb9357e7ef448a6646f/vehicle-and-equipment/",
+    "2026-02-28": "https://www.easyliveauction.com/catalogue/f97d34a5265347c82495f403e78b18cd/0af8d24542e81eb9357e7ef448a6646f/vehicle-and-equipment/"
+  },
   "lots": [
     {"reg": "LMN637A", "desc": "Lot 1 - Blue Suzuki Jimny SZ4 1328cc", "date": "2026-03-28", "price": null},
     {"reg": "TMN526D", "desc": "Lot 2 - Blue Jaguar XK8 3996cc", "date": "2026-03-28", "price": null},

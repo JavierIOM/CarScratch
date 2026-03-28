@@ -49,8 +49,8 @@ for (const lot of allLots) {
   pastAppearances.set(key, existing);
 }
 
-const auctionUrl =
-  'https://www.easyliveauction.com/catalogue/ffe7fe68861f0eec99cadad6b2c873bd/0af8d24542e81eb9357e7ef448a6646f/vehicle-and-equipment/';
+const auctionUrls = auctionData.auctionUrls as Record<string, string>;
+const auctionUrl = auctionUrls[date] ?? null;
 
 const soldCount = lots.filter((l) => l.price !== null).length;
 ---
@@ -75,15 +75,19 @@ const soldCount = lots.filter((l) => l.price !== null).length;
         {auctionPast && soldCount === 0 && (
           <span class="text-slate-500">Results pending</span>
         )}
-        <span class="text-slate-600">|</span>
-        <a
-          href={auctionUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-amber-400 hover:text-amber-300 transition-colors"
-        >
-          View on Easy Live Auction
-        </a>
+        {auctionUrl && (
+          <>
+            <span class="text-slate-600">|</span>
+            <a
+              href={auctionUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              View on Easy Live Auction
+            </a>
+          </>
+        )}
       </div>
       {!auctionPast && (
         <p class="text-xs text-slate-500 mt-3">
@@ -274,9 +278,15 @@ const soldCount = lots.filter((l) => l.price !== null).length;
       }
 
       if (data.taxStatus === 'Taxed' && (data.motStatus === 'Valid' || !data.motStatus)) {
+        card.style.borderColor = '';
         card.classList.replace('border-slate-700', 'border-green-700/40');
+        if (!card.classList.contains('border-green-700/40')) card.style.borderColor = 'rgb(21 128 61 / 0.4)';
       } else if (data.taxStatus === 'SORN' || data.motStatus === 'Not valid') {
+        card.style.borderColor = '';
         card.classList.replace('border-slate-700', 'border-red-700/40');
+        if (!card.classList.contains('border-red-700/40')) card.style.borderColor = 'rgb(185 28 28 / 0.4)';
+      } else {
+        card.style.borderColor = '';
       }
     } catch {
       if (loadingEl) loadingEl.classList.add('hidden');

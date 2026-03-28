@@ -29,6 +29,9 @@ const IOM_PATTERNS = [
   // e.g., 79-NMN, 79NMN, 123MN
   /^\d+\s*[A-Z]?MN[A-Z]?$/i,
 
+  // Pure numbers + MAN suffix: e.g., 2953-MAN, 2953MAN
+  /^\d+\s*MAN$/i,
+
   // Two letter MN suffix: [A-Z][A-Z]MN followed by numbers
   // Covers: AMN, BMN, CMN, DMN, EMN, FMN, GMN, HMN, JMN, KMN, LMN, MMN, NMN, PMN, RMN, SMN, TMN, VMN, WMN, XMN, YMN
   /^[A-Z]{1,2}MN\s*\d+\s*[A-Z]?$/i,
@@ -58,6 +61,12 @@ export function formatManxPlateForApi(registration: string): string {
   const clean = registration.toUpperCase().replace(/[\s-]+/g, '');
 
   // Try to parse and reformat
+  // Pattern: pure digits + MAN (e.g., 2953MAN -> 2953-MAN)
+  const numOnlyManMatch = clean.match(/^(\d+)(MAN)$/);
+  if (numOnlyManMatch) {
+    return `${numOnlyManMatch[1]}-${numOnlyManMatch[2]}`;
+  }
+
   // Pattern: letter + numbers + MAN (e.g., C2MAN)
   const manSuffixMatch = clean.match(/^([A-Z]\d+)(MAN)$/);
   if (manSuffixMatch) {
@@ -96,6 +105,12 @@ export function formatManxPlateForApi(registration: string): string {
  */
 export function formatManxPlateForDisplay(registration: string): string {
   const clean = registration.toUpperCase().replace(/[\s-]+/g, '');
+
+  // Pattern: pure digits + MAN (e.g., 2953MAN -> 2953 MAN)
+  const numOnlyManMatch = clean.match(/^(\d+)(MAN)$/);
+  if (numOnlyManMatch) {
+    return `${numOnlyManMatch[1]} ${numOnlyManMatch[2]}`;
+  }
 
   // Pattern: letter + numbers + MAN (e.g., C2MAN -> C2 MAN)
   const manSuffixMatch = clean.match(/^([A-Z]\d+)(MAN)$/);
