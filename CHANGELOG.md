@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.4.0] — 2026-03-31
+
+### Added
+- Buyer's fee estimates on auction lot cards — shows hammer price plus estimated total (flat reg and free reg tiers, inc VAT)
+- Nov 29 2025 auction pages 2 & 3 — 69 vehicles total with hammer prices
+- Feb 28 2026 auction results — 56 sold, 22 no sale
+
+### Changed
+- "Also listed" replaces "Previously listed" — correct for appearances in future auctions too
+- All auction house name references removed from UI; neutral "Isle of Man Vehicle Auction(s)" used throughout
+
 ## [2.3.0] — 2026-03-28
 
 ### Added
