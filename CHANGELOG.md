@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.3.0] — 2026-03-28
+
+### Added
+- Auction archive page at `/auctions` listing all recorded sales with lot counts, sold counts, and total value
+- "Auctions" link in the site header navigation
+- Auctions banner on the homepage linking to the archive
+- Per-date auction URLs stored in `chrystals-auctions.json` under `auctionUrls` map
+- Mar 28 2026 auction results — 69 sold, 23 no sale
+
+### Changed
+- Auction day now treated as past so same-day results display correctly
+
+### Fixed
+- `2953-MAN` plate now correctly detected as Manx and routed through IOM lookup
+- Previously-listed red border no longer overridden by tax/MOT JS border update
+- "View on Easy Live Auction" link only shown for dates with a stored URL
+- Previously-listed section made more visually distinct (red border box, red text)
+
 ## [2.2.0] — 2026-03-27
 
 ### Added

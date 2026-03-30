@@ -1,0 +1,120 @@
+---
+import Layout from '../layouts/Layout.astro';
+import auctionData from '../data/chrystals-auctions.json';
+
+type Lot = { reg: string; desc: string; date: string; price: number | null };
+const allLots = auctionData.lots as Lot[];
+const auctionUrls = auctionData.auctionUrls as Record<string, string>;
+
+// Build per-date summary, sorted newest first
+const dateMap = new Map<string, { lots: number; sold: number; totalValue: number }>();
+for (const lot of allLots) {
+  const entry = dateMap.get(lot.date) ?? { lots: 0, sold: 0, totalValue: 0 };
+  entry.lots++;
+  if (lot.price !== null) {
+    entry.sold++;
+    entry.totalValue += lot.price;
+  }
+  dateMap.set(lot.date, entry);
+}
+
+const auctions = [...dateMap.entries()]
+  .sort(([a], [b]) => b.localeCompare(a))
+  .map(([date, stats]) => ({ date, ...stats }));
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatPrice(p: number) {
+  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(p);
+}
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+---
+
+<Layout
+  title="IOM Auction Archive — Chrystals Auctions Isle of Man"
+  description="Browse all Chrystals Auctions vehicle sales from the Isle of Man. View lot listings, hammer prices, tax and MOT status for every auction."
+  canonicalPath="/auctions"
+>
+  <div class="max-w-5xl mx-auto px-4 py-12">
+
+    <div class="mb-10">
+      <p class="text-sm text-amber-500 uppercase tracking-widest font-medium mb-2">Chrystals Auctions, Isle of Man</p>
+      <h1 class="text-4xl font-bold tracking-tight">Auction Archive</h1>
+      <p class="text-slate-400 mt-3 max-w-2xl">
+        Every Vehicle &amp; Equipment auction on record. Click any date to view the full lot listing with tax status, MOT data, hammer prices, and previous appearance history.
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      {auctions.map(({ date, lots, sold, totalValue }) => {
+        const auctionDate = new Date(date + 'T00:00:00');
+        const isPast = auctionDate <= today;
+        const noSale = isPast ? lots - sold : null;
+        const hasResults = isPast && sold > 0;
+
+        return (
+          <a
+            href={`/auction/${date}`}
+            class="group flex items-center justify-between gap-4 p-5 bg-slate-800/50 border border-slate-700 hover:border-amber-600/50 hover:bg-slate-800 transition-colors"
+          >
+            <div class="flex items-center gap-5 min-w-0">
+              <!-- Date -->
+              <div class="flex-shrink-0">
+                <div class="text-lg font-semibold group-hover:text-amber-400 transition-colors">
+                  {formatDate(date)}
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5">{lots} vehicle{lots !== 1 ? 's' : ''}</div>
+              </div>
+
+              <!-- Results bar -->
+              {isPast && (
+                <div class="hidden sm:flex items-center gap-3 text-sm">
+                  {hasResults ? (
+                    <>
+                      <span class="text-green-400 font-medium">{sold} sold</span>
+                      {noSale! > 0 && <span class="text-slate-500">{noSale} no sale</span>}
+                    </>
+                  ) : (
+                    <span class="text-slate-500">Results pending</span>
+                  )}
+                </div>
+              )}
+              {!isPast && (
+                <span class="hidden sm:inline text-xs text-amber-500 border border-amber-600/30 px-2 py-0.5">Upcoming</span>
+              )}
+            </div>
+
+            <div class="flex items-center gap-4 flex-shrink-0 text-right">
+              {hasResults && totalValue > 0 && (
+                <div class="hidden md:block">
+                  <div class="text-sm font-semibold text-amber-400">{formatPrice(totalValue)}</div>
+                  <div class="text-xs text-slate-500">total sold</div>
+                </div>
+              )}
+              {auctionUrls[date] && (
+                <span
+                  class="text-xs text-slate-500 hover:text-amber-400 transition-colors hidden lg:inline"
+                  onclick={`event.preventDefault(); window.open('${auctionUrls[date]}', '_blank')`}
+                >
+                  Easy Live
+                </span>
+              )}
+              <svg class="w-4 h-4 text-slate-600 group-hover:text-amber-500 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </div>
+          </a>
+        );
+      })}
+    </div>
+
+    <p class="text-xs text-slate-600 mt-8">
+      Data sourced from <a href="https://www.chrystalsauctions.im/auctions/" target="_blank" rel="noopener noreferrer" class="hover:text-slate-400 transition-colors">chrystalsauctions.im</a> and <a href="https://www.easyliveauction.com" target="_blank" rel="noopener noreferrer" class="hover:text-slate-400 transition-colors">easyliveauction.com</a>. Updated manually after each auction.
+    </p>
+  </div>
+</Layout>
