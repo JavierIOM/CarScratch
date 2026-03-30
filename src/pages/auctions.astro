@@ -96,14 +96,6 @@ today.setHours(0, 0, 0, 0);
                   <div class="text-xs text-slate-500">total sold</div>
                 </div>
               )}
-              {auctionUrls[date] && (
-                <span
-                  class="text-xs text-slate-500 hover:text-amber-400 transition-colors hidden lg:inline"
-                  onclick={`event.preventDefault(); window.open('${auctionUrls[date]}', '_blank')`}
-                >
-                  Easy Live
-                </span>
-              )}
               <svg class="w-4 h-4 text-slate-600 group-hover:text-amber-500 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 18l6-6-6-6" />
               </svg>
