@@ -87,19 +87,6 @@ function totalWithFees(hammer: number, flatFee: boolean): number {
         {auctionPast && soldCount === 0 && (
           <span class="text-slate-500">Results pending</span>
         )}
-        {auctionUrl && (
-          <>
-            <span class="text-slate-600">|</span>
-            <a
-              href={auctionUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-amber-400 hover:text-amber-300 transition-colors"
-            >
-              View on Easy Live Auction
-            </a>
-          </>
-        )}
       </div>
       {!auctionPast && (
         <p class="text-xs text-slate-500 mt-3">

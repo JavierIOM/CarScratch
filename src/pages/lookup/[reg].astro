@@ -240,8 +240,8 @@ const vehicleSchema = vehicle ? {
               </div>
             </div>
             <p class="text-sm text-slate-500">
-              DVLA vehicle details are not available. This may be because the registration is very
-              new, or there's an issue with the data source.
+              Vehicle details are not available. This may be because the registration is very
+              new, or there's an issue retrieving the data.
             </p>
           </div>
         )}
@@ -273,11 +273,7 @@ const vehicleSchema = vehicle ? {
 
         <!-- Data source notice -->
         <div class="text-center text-sm text-slate-600 py-4">
-          {vehicleInfo.isManx ? (
-            <p>Data sourced from Isle of Man Government Vehicle Search and UK MOT History Service.</p>
-          ) : (
-            <p>Data sourced from DVLA Vehicle Enquiry Service and MOT History Service.</p>
-          )}
+          <p>Data sourced from official government and public records.</p>
           <p class="mt-1">Last updated: {new Date().toLocaleDateString('en-GB')}</p>
         </div>
       </div>
