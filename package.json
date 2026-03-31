@@ -1,6 +1,6 @@
 {
   "name": "carscratch",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "UK Vehicle Information Aggregator",
   "type": "module",
   "scripts": {
@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.0",
+    "canvas": "^3.2.3",
     "tailwindcss": "^4.1.0"
   }
 }

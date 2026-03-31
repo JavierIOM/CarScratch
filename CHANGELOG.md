@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.5.0] — 2026-03-30
+
+### Added
+- Facebook cover photo (820x312px PNG) at `public/facebook-cover.png` — dark terminal aesthetic with dot-grid texture, diagonal stripe accent, and stylised amber registration plate element
+- Generation script at `scripts/gen-facebook-cover.cjs` using `canvas`
+
 ## [2.4.0] — 2026-03-31
 
 ### Added
