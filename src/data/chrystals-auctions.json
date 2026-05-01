@@ -1,12 +1,559 @@
 {
-  "lastUpdated": "2026-03-28",
+  "lastUpdated": "2026-05-02",
   "source": "https://www.chrystalsauctions.im/auctions/",
   "auctionUrls": {
+    "2026-05-02": "https://www.easyliveauction.com/catalogue/27412e400c986d269fff2e2e9fb00a33/0af8d24542e81eb9357e7ef448a6646f/vehicle-and-equipment/",
     "2026-03-28": "https://www.easyliveauction.com/catalogue/ffe7fe68861f0eec99cadad6b2c873bd/0af8d24542e81eb9357e7ef448a6646f/vehicle-and-equipment/",
     "2026-02-28": "https://www.easyliveauction.com/catalogue/f97d34a5265347c82495f403e78b18cd/0af8d24542e81eb9357e7ef448a6646f/vehicle-and-equipment/",
     "2025-11-29": "https://www.easyliveauction.com/catalogue/563c48f9bf997287faa85076c9c8bbc5/0af8d24542e81eb9357e7ef448a6646f/vehicle-and-equipmentmore-lots-to-follow/"
   },
   "lots": [
+    {
+      "reg": "KMN751D",
+      "desc": "Lot 1 - White Land Rover Freelander TD4 2179cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "LMN432P",
+      "desc": "Lot 2 - Silver Honda Civic SI I-VTEC 1339cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "GMN959Y",
+      "desc": "Lot 3 - Silver Vauxhall Corsa Design 1389cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "MMN923T",
+      "desc": "Lot 4 - Red Suzuki Alto SZ 996cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "RMN586Y",
+      "desc": "Lot 5 - Blue BMW E90 320D SE 1995cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "RMN810B",
+      "desc": "Lot 6 - MG MG6 TSE Magnete Turbo 1796cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "PMN353K",
+      "desc": "Lot 7 - Beige Citroen C3 Aircross 1200cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "RMN147L",
+      "desc": "Lot 8 - Grey Lexus RX350 SE 3456cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "LMN931B",
+      "desc": "Lot 9 - Blue Renault Trafic SL27 DCI 115 1996cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "PMN400E",
+      "desc": "Lot 10 - Silver Mercedes-Benz E250 2143cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "HMN754W",
+      "desc": "Lot 11 - Red Suzuki LT-A400FK7 376cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "NMN180V",
+      "desc": "Lot 12 - Silver Daihatsu Extol 1298cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "NMN547A",
+      "desc": "Lot 13 - Honda Accord Saloon",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "RMN934H",
+      "desc": "Lot 14 - Grey Mini Cooper 1499cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "RMN439A",
+      "desc": "Lot 15 - Silver Audi TT FSI 1984cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN480D",
+      "desc": "Lot 16 - Black Mercedes CLK 280 2996cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "NMN106",
+      "desc": "Lot 17 - Red Jaguar XJS V12 Convertible 5343cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "KMN561P",
+      "desc": "Lot 18 - White Vauxhall Vivaro 2700 1995cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "RMN197W",
+      "desc": "Lot 19 - Black Range Rover Vogue 3000cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "RMN373N",
+      "desc": "Lot 20 - Blue Ford Fiesta Zetec S 998cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "XMN-37",
+      "desc": "Lot 30 - Black Buick Special 4204cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "MAN-735",
+      "desc": "Lot 31 - Blue Volkswagen Taigo R-Line TSI 1498cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "KMN368X",
+      "desc": "Lot 32 - Grey Lexus IS250 2499cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN927G",
+      "desc": "Lot 33 - Red Land Rover Evoque HSE DYN TD4 1999cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "LMN668U",
+      "desc": "Lot 34 - Black Hyundai Tucson CRX CRTD 4WD 1991cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "RMN528V",
+      "desc": "Lot 35 - Black Ford Transit Custom 290 LTD 2198cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "916JMN",
+      "desc": "Lot 36 - Green Jaguar XJS V12 5344cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "HMN629Y",
+      "desc": "Lot 37 - Blue Land Rover Defender 110 2.4TD",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "GMN861T",
+      "desc": "Lot 38 - Blue Land Rover Defender 110 TD5 2495cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "JMN762T",
+      "desc": "Lot 39 - Blue Land Rover Defender 110 2402cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN954D",
+      "desc": "Lot 40 - Grey Range Rover Evoque 2179cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "DMN322R",
+      "desc": "Lot 41 - Silver Range Rover V8 Vogue SE 4394cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN620G",
+      "desc": "Lot 43 - Grey Land Rover Evoque 1999cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN489G",
+      "desc": "Lot 44 - Blue Mercedes A200 Sport CDI 2143cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN250A",
+      "desc": "Lot 45 - White BMW 640D M Sport 2993cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN766F",
+      "desc": "Lot 46 - Grey Audi A5 S5 V8 Quattro 4163cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "RMN999G",
+      "desc": "Lot 59 - White Honda ST1300A Pan European 1261cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN368H",
+      "desc": "Lot 60 - Black Mercedes S320 CDI 2987cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "PMN521U",
+      "desc": "Lot 61 - Orange Mini Cooper 1499cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "PMN950F",
+      "desc": "Lot 62 - Jaguar F-Pace Prestige AWD 1999cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "NMN884L",
+      "desc": "Lot 64 - Black Range Rover Evoque 2179cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "PMN909V",
+      "desc": "Lot 65 - White Ford Transit Motorhome",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "NMN181R",
+      "desc": "Lot 66 - White Peugeot Allure 1000cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN973F",
+      "desc": "Lot 67 - Grey Mercedes-Benz A180 1461cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "LMN233U",
+      "desc": "Lot 68 - White Ford B-Max Titanium 1560cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "RMN524H",
+      "desc": "Lot 69 - Silver Hyundai Premium 4WD CRDI 1995cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "PMN617U",
+      "desc": "Lot 70 - Blue BMW X1 XDrive 20D M Sport 1995cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "LMN653P",
+      "desc": "Lot 71 - Blue Citroen C3 HDI 70 VT 1398cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "LMN730E",
+      "desc": "Lot 72 - White Peugeot Boxer Welfare Van 2198cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "NMN942X",
+      "desc": "Lot 73 - White Vauxhall Movano Welfare Van 2299cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "HMN378Y",
+      "desc": "Lot 74 - Black Mercedes Vito CDI Compact 2148cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "NMN462H",
+      "desc": "Lot 75 - Green Land Rover Discovery Sport HSE TD4 1999cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN986G",
+      "desc": "Lot 76 - White Nissan Note Acenta Premium 1198cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "MMN640T",
+      "desc": "Lot 77 - White Volkswagen Tiguan SE T 1968cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "KMN640L",
+      "desc": "Lot 78 - Silver Volkswagen Tiguan Match TDI 1968cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "RMN875T",
+      "desc": "Lot 79 - Red Volkswagen Golf GT TDI 1968cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "LMN308C",
+      "desc": "Lot 80 - Black Nissan Qashqai Tekna 1997cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN909G",
+      "desc": "Lot 81 - Grey Seat Leon X-Perience SE 1968cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "PMN783E",
+      "desc": "Lot 82 - White Vauxhall Astra SRI 1399cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN332H",
+      "desc": "Lot 83 - Black Audi A4 Convertible 1794cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "RMN905R",
+      "desc": "Lot 84 - White Range Rover Evoque 2179cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN525H",
+      "desc": "Lot 85 - Cream Renault Captur Dynamique S TCE 898cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "NMN603K",
+      "desc": "Lot 86 - Black Ford Focus Ecoboost 998cc Zetec",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "NMN227J",
+      "desc": "Lot 87 - Black Vauxhall Ampera Electron CVT 1398cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "KMN851K",
+      "desc": "Lot 88 - Black Mercedes Benz CLC 180 Kompressor 1796cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "KMN795E",
+      "desc": "Lot 89 - Blue Hyundai Comfort 110 1248cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "87FMN",
+      "desc": "Lot 90 - Red Suzuki SV650 SY 645cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "LMN581U",
+      "desc": "Lot 91 - Black Mini Cooper Clubman 1598cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN585G",
+      "desc": "Lot 93 - Black Ford Kuga Titanium X 4X4 TDCI 1997cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "KMN178U",
+      "desc": "Lot 94 - White Vauxhall Vivaro 2700 CDTI SWB 1995cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "LMN224X",
+      "desc": "Lot 95 - White Nissan Primastar DCI 115 SE SWB 1995cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "SL09VTX",
+      "desc": "Lot 96 - Blue BMW 116D Sport 1995cc (UK Registered)",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "PMN955D",
+      "desc": "Lot 97 - Black Vauxhall Antara E CDTI 1991cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "NMN184J",
+      "desc": "Lot 98 - Red Nissan Juke Acenta CVT 1598cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN647G",
+      "desc": "Lot 99 - White Volkswagen Tiguan SE 1390cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "HMN888M",
+      "desc": "Lot 100 - Silver Mercedes ML 320 CDI Sport 2987cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "BMN300X",
+      "desc": "Lot 101 - Silver BMW F25 X3 XDrive 20D SE 2000cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "PMN275B",
+      "desc": "Lot 102 - Bronze Fiat 500X Cross Multiair 1368cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "KMN310G",
+      "desc": "Lot 104 - White Fiat Benimar Motorhome 2800cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN253F",
+      "desc": "Lot 106 - Black Mercedes C350 SE 3498cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "JMN663N",
+      "desc": "Lot 112 - Iveco Eurocargo ML130E18D Tipper 3920cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "NMN277L",
+      "desc": "Lot 113 - White Renault Zoe Dynamique",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN753C",
+      "desc": "Lot 114 - Black BMW 325i SE 2996cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "LMN200N",
+      "desc": "Lot 115 - Black Audi TT Sport TDI Quattro 1968cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "JMN356M",
+      "desc": "Lot 116 - Mercedes Hymer Motorhome 2800cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "RMN171H",
+      "desc": "Lot 139 - Black Smart Fortwo 999cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN709E",
+      "desc": "Lot 140 - Blue Mercedes E220 Sport Saloon 2143cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "NMN171C",
+      "desc": "Lot 142 - Blue Renault Clio Dynamic Nav DCI 1461cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "TMN877G",
+      "desc": "Lot 143 - Black Mini Countryman One 1598cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "LMN615D",
+      "desc": "Lot 144 - Silver Mazda MX5 Roadster Sport Tech 1999cc",
+      "date": "2026-05-02",
+      "price": null
+    },
+    {
+      "reg": "KMN262F",
+      "desc": "Lot 145 - Iveco Cargo Box Van ML75E17 Welfare Unit",
+      "date": "2026-05-02",
+      "price": null
+    },
     {
       "reg": "LMN637A",
       "desc": "Lot 1 - Blue Suzuki Jimny SZ4 1328cc",

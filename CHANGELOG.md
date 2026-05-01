@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.6.0] — 2026-05-01
+
+### Added
+- May 2 2026 auction — 91 vehicle lots scraped pre-auction (prices pending)
+- Auction URL added for 2026-05-02
+
 ## [2.5.0] — 2026-03-30
 
 ### Added
