@@ -1,4 +1,16 @@
 ---
+import siteData from '../data/chrystals-auctions.json';
+
+const lastUpdated = new Date(siteData.lastUpdated);
+const lastUpdatedStr = lastUpdated.toLocaleString('en-GB', {
+  timeZone: 'Europe/London',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
 interface Props {
   title?: string;
   description?: string;
@@ -145,11 +157,12 @@ const organizationSchema = {
         <p class="mt-2">
           <a href="/suggestions" class="text-amber-500 hover:text-amber-400 transition-colors">Suggestion Box</a>
           <span class="mx-2">·</span>
-          <span class="text-slate-600">v2.6.1</span>
+          <span class="text-slate-600">v2.6.2</span>
           <span class="mx-2">·</span>
           <span class="text-slate-600">Created and Maintained by <a href="https://github.com/JavierIOM/CarScratch" target="_blank" rel="noopener noreferrer" class="text-amber-500 hover:text-amber-400 transition-colors">Javier</a></span>
         </p>
         <p class="mt-2 text-slate-600">All data on this site is freely available online. This site performs as an aggregator service.</p>
+        <p class="mt-1 text-slate-600">Last updated {lastUpdatedStr}</p>
         <div class="mt-4 flex justify-center" style="transform: scale(0.8); transform-origin: center;">
           <script is:inline type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="javieriom" data-color="#d97d26" data-emoji=""  data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#FFDD00" ></script>
         </div>

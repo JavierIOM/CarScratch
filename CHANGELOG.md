@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.6.2] — 2026-05-02
+
+### Added
+- "Last updated" timestamp in footer — pulls from auction data lastUpdated field, displayed in BST
+
 ## [2.6.1] — 2026-05-02
 
 ### Added
