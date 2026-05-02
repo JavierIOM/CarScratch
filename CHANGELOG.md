@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.6.1] — 2026-05-02
+
+### Added
+- May 2 2026 auction results — 59 sold, 33 no sale
+- TMN522H Honda CR-V added (was listed as REG TBC pre-auction)
+
 ## [2.6.0] — 2026-05-01
 
 ### Added
