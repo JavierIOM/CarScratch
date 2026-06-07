@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.5] — 2026-06-07
+
+### Fixed
+- ULEZ badge now shows on vehicles where neither Euro standard nor registration date is available — falls back to year of manufacture
+- ULEZ badge now shows on Manx primary cards that have a previous UK registration — uses DVLA data from the UK vehicle as fallback
+- ULEZ badge asterisk and tooltip indicate when compliance is estimated from registration date rather than confirmed data
+
 ## [2.6.4] — 2026-06-07
 
 ### Added
