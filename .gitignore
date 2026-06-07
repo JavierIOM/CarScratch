@@ -23,3 +23,6 @@ Thumbs.db
 
 # Claude Code
 .claude/
+
+# Social media drafts
+facebook-posts-*.md

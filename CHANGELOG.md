@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.6.3] — 2026-06-07
+
+### Fixed
+- Synced package-lock.json version (was stuck at 2.0.0)
+- Added `facebook-posts-*.md` to .gitignore
+
 ## [2.6.2] — 2026-05-02
 
 ### Added
