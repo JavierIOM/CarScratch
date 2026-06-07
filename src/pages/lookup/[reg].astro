@@ -33,6 +33,14 @@ const ulezStatus = vehicleInfo.vehicle
   ? computeULEZCompliance(vehicleInfo.vehicle, vehicleInfo.extras?.ulezCompliant)
   : null;
 
+// For Manx plates, the primary vehicle has limited date data — also compute from the
+// previous UK vehicle (DVLA data is more complete) and use as fallback
+const ukUlezStatus = vehicleInfo.ukVehicle
+  ? computeULEZCompliance(vehicleInfo.ukVehicle, vehicleInfo.extras?.ulezCompliant)
+  : null;
+
+const resolvedUlezStatus = ulezStatus ?? ukUlezStatus;
+
 // Generate SEO metadata
 const vehicle = vehicleInfo.vehicle;
 const pageTitle = vehicle
@@ -178,7 +186,7 @@ const vehicleSchema = vehicle ? {
         </div>
 
         {vehicleInfo.vehicle && (
-          <VehicleCard vehicle={vehicleInfo.vehicle} isManx={vehicleInfo.isManx} ulez={ulezStatus} />
+          <VehicleCard vehicle={vehicleInfo.vehicle} isManx={vehicleInfo.isManx} ulez={resolvedUlezStatus} />
         )}
 
         {vehicleInfo.extras && (
@@ -197,7 +205,7 @@ const vehicleSchema = vehicle ? {
               <div class="h-px flex-1 bg-slate-700/50"></div>
             </div>
             {vehicleInfo.ukVehicle && (
-              <VehicleCard vehicle={vehicleInfo.ukVehicle} ulez={ulezStatus} />
+              <VehicleCard vehicle={vehicleInfo.ukVehicle} ulez={ukUlezStatus ?? ulezStatus} />
             )}
             {!vehicleInfo.ukVehicle && (
               <div class="bg-slate-800/30 border border-slate-700/50 p-4 text-sm text-slate-500">
