@@ -1,14 +1,16 @@
 ---
 import type { VehicleData } from '../lib/types';
+import type { ULEZStatus } from '../lib/ulez';
 import { isManxPlate, formatManxPlateForDisplay } from '../lib/iom-detector';
 import { formatUKPlate } from '../lib/plate-formatter';
 
 interface Props {
   vehicle: VehicleData;
   isManx?: boolean;
+  ulez?: ULEZStatus;
 }
 
-const { vehicle, isManx = false } = Astro.props;
+const { vehicle, isManx = false, ulez = null } = Astro.props;
 
 // Check if registration is Manx (use prop or detect from registration)
 const isManxReg = isManx || isManxPlate(vehicle.registrationNumber);
@@ -102,13 +104,19 @@ const getMOTStatusClass = (status: string) => {
       </h2>
     </div>
 
-    <div class="flex gap-2">
+    <div class="flex flex-wrap gap-2">
       <span class={`px-3 py-1 text-sm font-medium border ${getTaxStatusClass(vehicle.taxStatus)}`}>
         Tax: {vehicle.taxStatus}
       </span>
       <span class={`px-3 py-1 text-sm font-medium border ${getMOTStatusClass(vehicle.motStatus)}`}>
         MOT: {vehicle.motStatus}
       </span>
+      {ulez !== null && (
+        <span class={`px-3 py-1 text-sm font-medium border ${ulez.compliant ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'}`}
+          title={ulez.source === 'euro-standard' ? `Based on ${vehicle.euroStatus} standard` : 'From vehicle data'}>
+          ULEZ: {ulez.compliant ? 'Compliant' : 'Not Compliant'}
+        </span>
+      )}
     </div>
   </div>
 

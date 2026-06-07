@@ -9,6 +9,7 @@ import MileageChart from '../../components/MileageChart.astro';
 import { getVehicleInfo } from '../../lib/aggregator';
 import { isManxPlate, formatManxPlateForDisplay } from '../../lib/iom-detector';
 import { formatUKPlate } from '../../lib/plate-formatter';
+import { computeULEZCompliance } from '../../lib/ulez';
 
 const { reg } = Astro.params;
 
@@ -27,6 +28,10 @@ const formatReg = (r: string) => {
 };
 
 const formattedReg = formatReg(reg);
+
+const ulezStatus = vehicleInfo.vehicle
+  ? computeULEZCompliance(vehicleInfo.vehicle, vehicleInfo.extras?.ulezCompliant)
+  : null;
 
 // Generate SEO metadata
 const vehicle = vehicleInfo.vehicle;
@@ -173,7 +178,7 @@ const vehicleSchema = vehicle ? {
         </div>
 
         {vehicleInfo.vehicle && (
-          <VehicleCard vehicle={vehicleInfo.vehicle} isManx={vehicleInfo.isManx} />
+          <VehicleCard vehicle={vehicleInfo.vehicle} isManx={vehicleInfo.isManx} ulez={ulezStatus} />
         )}
 
         {vehicleInfo.extras && (
@@ -192,7 +197,7 @@ const vehicleSchema = vehicle ? {
               <div class="h-px flex-1 bg-slate-700/50"></div>
             </div>
             {vehicleInfo.ukVehicle && (
-              <VehicleCard vehicle={vehicleInfo.ukVehicle} />
+              <VehicleCard vehicle={vehicleInfo.ukVehicle} ulez={ulezStatus} />
             )}
             {!vehicleInfo.ukVehicle && (
               <div class="bg-slate-800/30 border border-slate-700/50 p-4 text-sm text-slate-500">

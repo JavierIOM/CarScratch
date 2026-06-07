@@ -9,7 +9,7 @@ const { extras } = Astro.props;
 
 // Check if we have any meaningful data to show
 const hasPerformance = extras.bhp || extras.topSpeed || extras.zeroToSixty || extras.maxTorque;
-const hasCompliance = extras.ulezCompliant !== undefined || extras.cazCompliant !== undefined || extras.insuranceGroup;
+const hasCompliance = extras.cazCompliant !== undefined || extras.insuranceGroup;
 const hasMarket = extras.previousPrice || extras.previousMileage;
 const hasFuelEconomy = extras.fuelEconomyUrban || extras.fuelEconomyExtraUrban || extras.fuelEconomyCombined;
 const hasRoadTax = extras.roadTax12Month || extras.roadTax6Month;
@@ -94,15 +94,6 @@ const hasAnyData = hasPerformance || hasCompliance || hasMarket || hasFuelEconom
         <div>
           <dt class="text-sm text-slate-500 mb-1">Insurance Group</dt>
           <dd class="font-medium">{extras.insuranceGroup}</dd>
-        </div>
-      )}
-
-      {extras.ulezCompliant !== undefined && (
-        <div>
-          <dt class="text-sm text-slate-500 mb-1">ULEZ Compliant</dt>
-          <dd class={`font-medium ${extras.ulezCompliant ? 'text-green-400' : 'text-red-400'}`}>
-            {extras.ulezCompliant ? 'Yes' : 'No'}
-          </dd>
         </div>
       )}
 

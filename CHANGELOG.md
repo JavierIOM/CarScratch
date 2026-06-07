@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.6.4] — 2026-06-07
+
+### Added
+- ULEZ compliance badge on vehicle cards, alongside Tax and MOT status
+- Fallback ULEZ calculation from DVLA Euro standard when scraper data is unavailable (Euro 4+ petrol, Euro 6+ diesel, EVs always compliant)
+
+### Changed
+- Removed duplicate ULEZ entry from the Additional Information grid (now shown prominently in header)
+
 ## [2.6.3] — 2026-06-07
 
 ### Fixed

@@ -1,6 +1,6 @@
 {
   "name": "carscratch",
-  "version": "2.6.3",
+  "version": "2.6.4",
   "description": "UK Vehicle Information Aggregator",
   "type": "module",
   "scripts": {
