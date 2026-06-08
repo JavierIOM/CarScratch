@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.6.6] — 2026-06-08
+
+### Fixed
+- IoM vehicle duty now returns correct £28 flat rate for motorcycles (Category A, A1, P) instead of falling through to the car engine-capacity band table
+
 ## [2.6.5] — 2026-06-07
 
 ### Fixed

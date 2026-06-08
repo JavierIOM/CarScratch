@@ -230,7 +230,7 @@ async function getIOMVehicleInfo(
     const engineCC = ukVehicle?.engineCapacity || vehicle?.engineCapacity;
     const year = ukVehicle?.yearOfManufacture || vehicle?.yearOfManufacture;
     const firstRegDate = ukVehicle?.monthOfFirstRegistration || iomData.dateOfFirstRegistration;
-    const iomDuty = calculateIOMDuty(co2, engineCC, year, firstRegDate);
+    const iomDuty = calculateIOMDuty(co2, engineCC, year, firstRegDate, iomData.category);
 
     // Merge extras - strip UK road tax and replace with IoM rates
     const mergedExtras: ScrapedExtras = {

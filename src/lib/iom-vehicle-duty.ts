@@ -54,6 +54,10 @@ const IOM_ENGINE_BANDS: EngineCapacityBand[] = [
 // Schedule 1, paragraph 1 - Veteran vehicles (30+ years old)
 const VETERAN_DUTY = 28;
 
+// Schedule 1, Part 1, paragraph 1 - Category A, A1 and P (motorcycles): flat £28, no 6-month
+const MOTORCYCLE_DUTY = 28;
+const MOTORCYCLE_CATEGORIES = new Set(['A', 'A1', 'P']);
+
 export interface IOMDutyResult {
   band: string;
   duty12Month: string;
@@ -111,8 +115,18 @@ export function calculateIOMDuty(
   co2Emissions: number | undefined,
   engineCapacityCC?: number,
   yearOfManufacture?: number,
-  firstRegistrationDate?: string
+  firstRegistrationDate?: string,
+  vehicleCategory?: string
 ): IOMDutyResult | null {
+  // Motorcycles (Category A, A1, P): flat £28, no 6-month licence available
+  if (vehicleCategory && MOTORCYCLE_CATEGORIES.has(vehicleCategory.trim().toUpperCase())) {
+    return {
+      band: 'Motorcycle',
+      duty12Month: `£${MOTORCYCLE_DUTY}`,
+      duty6Month: 'N/A',
+    };
+  }
+
   // Veteran vehicles: 30+ years old, flat rate £28
   if (yearOfManufacture) {
     const vehicleAge = new Date().getFullYear() - yearOfManufacture;
