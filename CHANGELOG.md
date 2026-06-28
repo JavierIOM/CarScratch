@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.6.8] — 2026-06-28
+
+### Added
+- Jun 27 2026 auction results — 58 sold, 41 no sale; 23 additional lots added on auction day (incl. late entries and previously TBC registrations)
+
 ## [2.6.7] — 2026-06-08
 
 ### Added
