@@ -49,9 +49,6 @@ for (const lot of allLots) {
   pastAppearances.set(key, existing);
 }
 
-const auctionUrls = auctionData.auctionUrls as Record<string, string>;
-const auctionUrl = auctionUrls[date] ?? null;
-
 const soldCount = lots.filter((l) => l.price !== null).length;
 
 // Buyer's fee calculation (inc VAT)
@@ -68,8 +65,8 @@ function totalWithFees(hammer: number, flatFee: boolean): number {
 ---
 
 <Layout
-  title={`IOM Auction ${displayDate} — ${lots.length} Vehicles`}
-  description={`Isle of Man vehicle auction — ${displayDate}. ${lots.length} vehicles with MOT history, tax status, and mileage.`}
+  title={`IOM Auction: ${displayDate} (${lots.length} Vehicles)`}
+  description={`Isle of Man vehicle auction on ${displayDate}. ${lots.length} vehicles with MOT history, tax status, and mileage.`}
   canonicalPath={`/auction/${date}`}
 >
   <div class="max-w-7xl mx-auto px-4 py-8">
@@ -77,7 +74,7 @@ function totalWithFees(hammer: number, flatFee: boolean): number {
     <div class="mb-8">
       <p class="text-xs text-slate-500 mb-1 uppercase tracking-wider">Isle of Man Vehicle Auction</p>
       <h1 class="text-3xl font-bold mb-2">
-        Auction — <span class="text-amber-400">{displayDate}</span>
+        <span class="text-amber-400">{displayDate}</span>
       </h1>
       <div class="flex flex-wrap items-center gap-4 text-sm text-slate-400">
         <span>{lots.length} vehicles</span>
@@ -127,6 +124,7 @@ function totalWithFees(hammer: number, flatFee: boolean): number {
             class="vehicle-card bg-slate-800/50 border border-slate-700 p-4 flex flex-col gap-3 transition-colors"
             style={sortedPast.length > 0 ? 'border-color: rgb(185 28 28 / 0.6);' : ''}
             data-reg={apiReg}
+            data-has-past={sortedPast.length > 0 ? 'true' : undefined}
           >
             <!-- Header row -->
             <div class="flex items-start justify-between gap-2">
@@ -173,9 +171,9 @@ function totalWithFees(hammer: number, flatFee: boolean): number {
                     </span>
                     <span class="text-xs text-slate-500">
                       Est. total incl. fees: <span class="text-slate-400">{formatPrice(totalWithFees(lot.price, true))}</span>
-                      <span class="text-slate-600"> – </span>
+                      <span class="text-slate-600"> / </span>
                       <span class="text-slate-400">{formatPrice(totalWithFees(lot.price, false))}</span>
-                      <span class="text-slate-600 ml-1">(flat – free reg)</span>
+                      <span class="text-slate-600 ml-1">(flat / free reg)</span>
                     </span>
                   </>
                 ) : (
@@ -207,11 +205,10 @@ function totalWithFees(hammer: number, flatFee: boolean): number {
 
             <!-- Live status area (tax/MOT/mileage) -->
             <div class="status-area mt-auto">
-              <div class="status-loading flex items-center gap-2 text-xs text-slate-500">
-                <svg class="w-3 h-3 animate-spin flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-                </svg>
-                Loading status...
+              <div class="status-loading flex flex-wrap gap-1.5">
+                <div class="h-5 w-14 rounded bg-slate-700/60 animate-pulse"></div>
+                <div class="h-5 w-20 rounded bg-slate-700/60 animate-pulse" style="animation-delay:100ms"></div>
+                <div class="h-5 w-12 rounded bg-slate-700/60 animate-pulse" style="animation-delay:200ms"></div>
               </div>
               <div class="status-data hidden flex flex-wrap gap-2 text-xs"></div>
             </div>
@@ -290,16 +287,14 @@ function totalWithFees(hammer: number, flatFee: boolean): number {
         dataEl.innerHTML = badges || '<span class="text-slate-500">No data available</span>';
       }
 
-      if (data.taxStatus === 'Taxed' && (data.motStatus === 'Valid' || !data.motStatus)) {
-        card.style.borderColor = '';
-        card.classList.replace('border-slate-700', 'border-green-700/40');
-        if (!card.classList.contains('border-green-700/40')) card.style.borderColor = 'rgb(21 128 61 / 0.4)';
-      } else if (data.taxStatus === 'SORN' || data.motStatus === 'Not valid') {
-        card.style.borderColor = '';
-        card.classList.replace('border-slate-700', 'border-red-700/40');
-        if (!card.classList.contains('border-red-700/40')) card.style.borderColor = 'rgb(185 28 28 / 0.4)';
-      } else {
-        card.style.borderColor = '';
+      if (!card.dataset.hasPast) {
+        if (data.taxStatus === 'Taxed' && (data.motStatus === 'Valid' || !data.motStatus)) {
+          card.style.borderColor = 'rgb(21 128 61 / 0.4)';
+        } else if (data.taxStatus === 'SORN' || data.motStatus === 'Not valid') {
+          card.style.borderColor = 'rgb(185 28 28 / 0.4)';
+        } else if (data.taxStatus === 'Untaxed') {
+          card.style.borderColor = 'rgb(217 119 6 / 0.4)';
+        }
       }
     } catch {
       if (loadingEl) loadingEl.classList.add('hidden');

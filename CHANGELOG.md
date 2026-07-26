@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.6.10] — 2026-07-26
+
+### Changed
+- Auction listing: skeleton pill loaders replace generic spinner while status loads
+- Homepage: feature section uses amber icons and cleaner divider layout (no card boxes)
+
+### Fixed
+- Auction listing: past-appearance red border no longer wiped when tax/MOT status loads
+- Auction listing: em-dashes removed from page title, H1, description, and fees separator
+- Auction listing: removed unused `auctionUrl` variable
+- Homepage: "auction" no longer incorrectly capitalised in search subtext
+
 ## [2.6.9] — 2026-07-26
 
 ### Added
