@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.6.9] — 2026-07-26
+
+### Added
+- Jul 25 2026 auction results — 51 sold, 32 no sale (83 vehicle lots)
+
 ## [2.6.8] — 2026-06-28
 
 ### Added
