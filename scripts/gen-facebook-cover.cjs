@@ -109,7 +109,7 @@ ctx.restore();
 // ── Main wordmark: CarScratch ─────────────────────────────────────────────────
 const textLeft = barMargin + barWidth + 24;
 
-// "CAR" in white, "SCRATCH" in amber — same line, large
+// "CAR" in white, "SCRATCH" in amber, same line, large
 ctx.font = 'bold 72px Arial, sans-serif';
 ctx.textAlign = 'left';
 ctx.textBaseline = 'alphabetic';

@@ -33,7 +33,7 @@ const ulezStatus = vehicleInfo.vehicle
   ? computeULEZCompliance(vehicleInfo.vehicle, vehicleInfo.extras?.ulezCompliant)
   : null;
 
-// For Manx plates, the primary vehicle has limited date data — also compute from the
+// For Manx plates, the primary vehicle has limited date data, so also compute from the
 // previous UK vehicle (DVLA data is more complete) and use as fallback
 const ukUlezStatus = vehicleInfo.ukVehicle
   ? computeULEZCompliance(vehicleInfo.ukVehicle, vehicleInfo.extras?.ulezCompliant)

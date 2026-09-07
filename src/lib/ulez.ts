@@ -44,7 +44,7 @@ export function computeULEZCompliance(vehicle: VehicleData, scrapedCompliant?: b
   const year = vehicle.yearOfManufacture;
   if (year && year > 1900) {
     if (fuel.includes('diesel')) {
-      // Diesel cutoff Sep 2015 — year 2015 is ambiguous, so only mark compliant if 2016+
+      // Diesel cutoff Sep 2015, year 2015 is ambiguous, so only mark compliant if 2016+
       if (year >= 2016) return { compliant: true, source: 'registration-date' };
       if (year < 2015) return { compliant: false, source: 'registration-date' };
     }

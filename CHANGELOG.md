@@ -1,11 +1,17 @@
 # Changelog
 
-## [2.6.11] — 2026-09-04
+## [2.6.12] - 2026-09-04
+
+### Changed
+- Em-dashes removed everywhere: changelog headings and entries, the auction archive page title, the OG image strapline, and three code comments
+- OG image regenerated from its SVG source, cache-bust bumped to `?v=3` so Facebook re-scrapes it
+
+## [2.6.11] - 2026-09-04
 
 ### Added
-- Sep 5 2026 auction — 75 vehicle lots scraped pre-auction (prices pending)
+- Sep 5 2026 auction: 75 vehicle lots scraped pre-auction (prices pending)
 
-## [2.6.10] — 2026-07-26
+## [2.6.10] - 2026-07-26
 
 ### Changed
 - Auction listing: skeleton pill loaders replace generic spinner while status loads
@@ -17,34 +23,34 @@
 - Auction listing: removed unused `auctionUrl` variable
 - Homepage: "auction" no longer incorrectly capitalised in search subtext
 
-## [2.6.9] — 2026-07-26
+## [2.6.9] - 2026-07-26
 
 ### Added
-- Jul 25 2026 auction results — 51 sold, 32 no sale (83 vehicle lots)
+- Jul 25 2026 auction results: 51 sold, 32 no sale (83 vehicle lots)
 
-## [2.6.8] — 2026-06-28
-
-### Added
-- Jun 27 2026 auction results — 58 sold, 41 no sale; 23 additional lots added on auction day (incl. late entries and previously TBC registrations)
-
-## [2.6.7] — 2026-06-08
+## [2.6.8] - 2026-06-28
 
 ### Added
-- Jun 27 2026 auction — 98 vehicle lots scraped pre-auction (prices pending)
+- Jun 27 2026 auction results: 58 sold, 41 no sale; 23 additional lots added on auction day (incl. late entries and previously TBC registrations)
 
-## [2.6.6] — 2026-06-08
+## [2.6.7] - 2026-06-08
+
+### Added
+- Jun 27 2026 auction: 98 vehicle lots scraped pre-auction (prices pending)
+
+## [2.6.6] - 2026-06-08
 
 ### Fixed
 - IoM vehicle duty now returns correct £28 flat rate for motorcycles (Category A, A1, P) instead of falling through to the car engine-capacity band table
 
-## [2.6.5] — 2026-06-07
+## [2.6.5] - 2026-06-07
 
 ### Fixed
-- ULEZ badge now shows on vehicles where neither Euro standard nor registration date is available — falls back to year of manufacture
-- ULEZ badge now shows on Manx primary cards that have a previous UK registration — uses DVLA data from the UK vehicle as fallback
+- ULEZ badge now shows on vehicles where neither Euro standard nor registration date is available, falls back to year of manufacture
+- ULEZ badge now shows on Manx primary cards that have a previous UK registration, uses DVLA data from the UK vehicle as fallback
 - ULEZ badge asterisk and tooltip indicate when compliance is estimated from registration date rather than confirmed data
 
-## [2.6.4] — 2026-06-07
+## [2.6.4] - 2026-06-07
 
 ### Added
 - ULEZ compliance badge on vehicle cards, alongside Tax and MOT status
@@ -53,54 +59,54 @@
 ### Changed
 - Removed duplicate ULEZ entry from the Additional Information grid (now shown prominently in header)
 
-## [2.6.3] — 2026-06-07
+## [2.6.3] - 2026-06-07
 
 ### Fixed
 - Synced package-lock.json version (was stuck at 2.0.0)
 - Added `facebook-posts-*.md` to .gitignore
 
-## [2.6.2] — 2026-05-02
+## [2.6.2] - 2026-05-02
 
 ### Added
-- "Last updated" timestamp in footer — pulls from auction data lastUpdated field, displayed in BST
+- "Last updated" timestamp in footer, pulls from auction data lastUpdated field, displayed in BST
 
-## [2.6.1] — 2026-05-02
+## [2.6.1] - 2026-05-02
 
 ### Added
-- May 2 2026 auction results — 59 sold, 33 no sale
+- May 2 2026 auction results: 59 sold, 33 no sale
 - TMN522H Honda CR-V added (was listed as REG TBC pre-auction)
 
-## [2.6.0] — 2026-05-01
+## [2.6.0] - 2026-05-01
 
 ### Added
-- May 2 2026 auction — 91 vehicle lots scraped pre-auction (prices pending)
+- May 2 2026 auction: 91 vehicle lots scraped pre-auction (prices pending)
 - Auction URL added for 2026-05-02
 
-## [2.5.0] — 2026-03-30
+## [2.5.0] - 2026-03-30
 
 ### Added
-- Facebook cover photo (820x312px PNG) at `public/facebook-cover.png` — dark terminal aesthetic with dot-grid texture, diagonal stripe accent, and stylised amber registration plate element
+- Facebook cover photo (820x312px PNG) at `public/facebook-cover.png`: dark terminal aesthetic with dot-grid texture, diagonal stripe accent, and stylised amber registration plate element
 - Generation script at `scripts/gen-facebook-cover.cjs` using `canvas`
 
-## [2.4.0] — 2026-03-31
+## [2.4.0] - 2026-03-31
 
 ### Added
-- Buyer's fee estimates on auction lot cards — shows hammer price plus estimated total (flat reg and free reg tiers, inc VAT)
-- Nov 29 2025 auction pages 2 & 3 — 69 vehicles total with hammer prices
-- Feb 28 2026 auction results — 56 sold, 22 no sale
+- Buyer's fee estimates on auction lot cards, shows hammer price plus estimated total (flat reg and free reg tiers, inc VAT)
+- Nov 29 2025 auction pages 2 & 3: 69 vehicles total with hammer prices
+- Feb 28 2026 auction results: 56 sold, 22 no sale
 
 ### Changed
-- "Also listed" replaces "Previously listed" — correct for appearances in future auctions too
+- "Also listed" replaces "Previously listed", correct for appearances in future auctions too
 - All auction house name references removed from UI; neutral "Isle of Man Vehicle Auction(s)" used throughout
 
-## [2.3.0] — 2026-03-28
+## [2.3.0] - 2026-03-28
 
 ### Added
 - Auction archive page at `/auctions` listing all recorded sales with lot counts, sold counts, and total value
 - "Auctions" link in the site header navigation
 - Auctions banner on the homepage linking to the archive
 - Per-date auction URLs stored in `chrystals-auctions.json` under `auctionUrls` map
-- Mar 28 2026 auction results — 69 sold, 23 no sale
+- Mar 28 2026 auction results: 69 sold, 23 no sale
 
 ### Changed
 - Auction day now treated as past so same-day results display correctly
@@ -111,11 +117,11 @@
 - "View on Easy Live Auction" link only shown for dates with a stored URL
 - Previously-listed section made more visually distinct (red border box, red text)
 
-## [2.2.0] — 2026-03-27
+## [2.2.0] - 2026-03-27
 
 ### Added
 - Auction listing page at `/auction/[date]` showing all vehicle lots for a given sale
-- Mar 28 2026 auction data — 91 vehicles across 3 pages scraped from Easy Live Auction
+- Mar 28 2026 auction data: 91 vehicles across 3 pages scraped from Easy Live Auction
 - JSON API endpoint `/api/vehicle/[reg]` returning slim vehicle status (tax, MOT, mileage)
 - Lazy IntersectionObserver loading of tax/MOT status badges on the auction listing page
 - Card border colour tinting based on vehicle tax/MOT status (green = good, red = SORN/expired)
@@ -123,29 +129,29 @@
 ### Changed
 - `lastUpdated` in auction data updated to 2026-03-28
 
-## [2.1.2] — 2026-03-05
+## [2.1.2] - 2026-03-05
 
 ### Fixed
 - Restored ScraperAPI as the primary proxy; scrape.do moved back to fallback
 - Proxy selection order corrected after scrape.do swap caused failures
 
-## [2.1.1] — 2026-02-20
+## [2.1.1] - 2026-02-20
 
 ### Fixed
 - OG image URL cache-busted with `?v=2` to force Facebook re-fetch
 - Added `fb:app_id`, `og:image:type`, `og:image:secure_url`, `og:image:alt` meta tags
 - Corrected `robots.txt` sitemap URL to use `carscratch.uk` instead of Netlify subdomain
 
-## [2.1.0] — 2026-02-14
+## [2.1.0] - 2026-02-14
 
 ### Added
-- Client-side PDF export using jsPDF — vehicle data embedded in page as JSON
+- Client-side PDF export using jsPDF, vehicle data embedded in page as JSON
 - Isle of Man Vehicle Duty calculator with three-tier logic (veteran / pre-2010 / post-2010)
 - Human-readable vehicle category and drive type labels in ExtrasCard
 - Open Graph image (1200×630) generated from SVG via Sharp; full OG + Facebook meta tags
 - Favicons generated in all standard sizes from `public/favicon.svg`
 
 ### Fixed
-- Wheel Plan filter — only stored when value contains "axle" to prevent scraper false-positives
+- Wheel Plan filter, only stored when value contains "axle" to prevent scraper false-positives
 - IoM duty calculation corrected for pre-April 2010 vehicles
 - Engine capacity fallback and veteran rate (£28 flat) added to duty calculator

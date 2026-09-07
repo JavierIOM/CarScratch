@@ -54,7 +54,7 @@
   </g>
 
   <!-- Description -->
-  <text x="600" y="455" font-family="Arial, sans-serif" font-size="22" fill="#64748b" text-anchor="middle">Free vehicle lookup — no sign-up required</text>
+  <text x="600" y="455" font-family="Arial, sans-serif" font-size="22" fill="#64748b" text-anchor="middle">Free vehicle lookup, no sign-up required</text>
 
   <!-- URL bar -->
   <rect x="360" y="478" width="480" height="48" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
