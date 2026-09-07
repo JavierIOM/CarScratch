@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.6.13] - 2026-09-07
+
+### Added
+- Sep 5 2026 auction results: 46 sold, 28 no sale (£88,470 total)
+
+### Changed
+- Lot 88 (BMW 320D, RMN320) removed, withdrawn before sale rather than offered and unsold
+- Lot 89 corrected to Toyota Avensis GS, the catalogue had it as "Anesis"
+
 ## [2.6.12] - 2026-09-04
 
 ### Changed

@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-09-04T21:14:15.000Z",
+  "lastUpdated": "2026-09-07T11:53:23.000Z",
   "source": "https://www.chrystalsauctions.im/auctions/",
   "auctionUrls": {
     "2026-06-27": "https://www.easyliveauction.com/catalogue/9e8c5502cbe956a3fa5380a73016c996/0af8d24542e81eb9357e7ef448a6646f/vehicle-and-equipment/",
@@ -21,19 +21,19 @@
       "reg": "KMN570N",
       "desc": "Lot 2 - Blue Ford Focus C-MAX GHIA 1999cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 750
     },
     {
       "reg": "PMN456G",
       "desc": "Lot 3 - Black Lexus IS250 SE 2499cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 700
     },
     {
       "reg": "LMN183T",
       "desc": "Lot 4 - Blue Honda Civic VTEC Executive 1590cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 250
     },
     {
       "reg": "RMN197C",
@@ -45,7 +45,7 @@
       "reg": "GMN100D",
       "desc": "Lot 6 - Red Mini Cooper S 1598cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 1400
     },
     {
       "reg": "HMN100A",
@@ -63,19 +63,19 @@
       "reg": "LMN875G",
       "desc": "Lot 9 - Black Ford Transit Custom 290s 2198cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 5000
     },
     {
       "reg": "PMN598M",
       "desc": "Lot 10 - Blue Land Rover Discovery 3 TDV6 SE 2720cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 800
     },
     {
       "reg": "KMN489T",
       "desc": "Lot 11 - White Ford Transit Connect T230 LWB 1753cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 900
     },
     {
       "reg": "RMN232U",
@@ -99,13 +99,13 @@
       "reg": "PMN351V",
       "desc": "Lot 15 - Blue Mercedes Vito 109 CDI Compact 2148cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 600
     },
     {
       "reg": "MMN356G",
       "desc": "Lot 16 - Blue Volkswagen Golf S TDI 1600cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 750
     },
     {
       "reg": "PMN521U",
@@ -123,43 +123,43 @@
       "reg": "RMN102F",
       "desc": "Lot 19 - Blue Ford Fusion Zetec 1596cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 750
     },
     {
       "reg": "TMN203J",
       "desc": "Lot 20 - Renault Clio Dynamique S Nav 1461cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 1000
     },
     {
       "reg": "KMN154B",
       "desc": "Lot 21 - Cream Kia Soul Shaker 1591cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 500
     },
     {
       "reg": "MN-1941",
       "desc": "Lot 22 - Red Porsche 944 2479cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 6600
     },
     {
       "reg": "EMN966B",
       "desc": "Lot 23 - Red Honda CBR900 RRW 918cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 800
     },
     {
       "reg": "RMN625D",
       "desc": "Lot 24 - White Mercedes-Benz Sprinter 313 CDI Panel Van 2143cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 800
     },
     {
       "reg": "PMN203X",
       "desc": "Lot 37 - Red Ford B-Max Titanium 1596cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 2000
     },
     {
       "reg": "TMN753J",
@@ -177,19 +177,19 @@
       "reg": "GMN702T",
       "desc": "Lot 41 - Blue Renault Scenic Dynamique 1V 1598cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 220
     },
     {
       "reg": "MMN584Y",
       "desc": "Lot 42 - Red Ford Fiesta Zetec 1242cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 1800
     },
     {
       "reg": "PMN150T",
       "desc": "Lot 43 - Silver Vauxhall Antara Excl AWD CDTI 2231cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 950
     },
     {
       "reg": "RMN963K",
@@ -219,13 +219,13 @@
       "reg": "NMN870E",
       "desc": "Lot 48 - Black Ford Fiesta Titanium 998cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 2800
     },
     {
       "reg": "NMN253D",
       "desc": "Lot 49 - Blue Nissan Qashqai N-Vision DCI 1461cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 3300
     },
     {
       "reg": "NMN919W",
@@ -237,7 +237,7 @@
       "reg": "MMN238M",
       "desc": "Lot 61 - Blue Honda Jazz I-VTEC ES 1339cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 1350
     },
     {
       "reg": "PMN348J",
@@ -249,25 +249,25 @@
       "reg": "LMN285K",
       "desc": "Lot 64 - Red Ford Focus Zetec 1596cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 1500
     },
     {
       "reg": "MMN921G",
       "desc": "Lot 65 - Black Ford Focus Edge EONETIC 1560cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 750
     },
     {
       "reg": "JMN240P",
       "desc": "Lot 66 - White Toyota Hi-Ace 300 LWB 2494cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 1750
     },
     {
       "reg": "MMN471X",
       "desc": "Lot 67 - Red Fiat 500L Trekking Multijet S-A 1248cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 1300
     },
     {
       "reg": "TMN916K",
@@ -285,13 +285,13 @@
       "reg": "TMN196K",
       "desc": "Lot 71 - Silver Mercedes GLA220 CDI 4Matic 2143cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 5500
     },
     {
       "reg": "MMN495H",
       "desc": "Lot 72 - Black Toyota Auris Icon 1598cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 2200
     },
     {
       "reg": "PMN867J",
@@ -303,7 +303,7 @@
       "reg": "NMN456T",
       "desc": "Lot 74 - White Audi A3 S Line TFSI 1984cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 4100
     },
     {
       "reg": "PMN836L",
@@ -315,37 +315,37 @@
       "reg": "RMN249U",
       "desc": "Lot 76 - Black Ford S-Max Titanium TDCI 1997cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 400
     },
     {
       "reg": "MMN496V",
       "desc": "Lot 77 - White Ford Transit Custom Courier Base 1499cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 4600
     },
     {
       "reg": "TMN499G",
       "desc": "Lot 78 - Black Range Rover Discovery Sport 1999cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 7100
     },
     {
       "reg": "RMN313M",
       "desc": "Lot 79 - Silver Land Rover Freelander TDV4 1951cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 1300
     },
     {
       "reg": "CMN222K",
       "desc": "Lot 80 - Green Rover 75 Connoisseur 1951cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 1800
     },
     {
       "reg": "TMN387H",
       "desc": "Lot 81 - Red Ford Connect T220 SWB 1753cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 1100
     },
     {
       "reg": "MMN125C",
@@ -357,19 +357,19 @@
       "reg": "LMN893Y",
       "desc": "Lot 83 - Black Peugeot 208 Active 1200cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 1200
     },
     {
       "reg": "MMN510H",
       "desc": "Lot 84 - Silver Volkswagen Golf SE 1595cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 200
     },
     {
       "reg": "PMN664T",
       "desc": "Lot 85 - Purple Citroen DS4 DSPORT 1598cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 900
     },
     {
       "reg": "LMN889E",
@@ -381,17 +381,11 @@
       "reg": "NMN596H",
       "desc": "Lot 87 - Silver Volkswagen Transporter T32 1968cc",
       "date": "2026-09-05",
-      "price": null
-    },
-    {
-      "reg": "RMN320",
-      "desc": "Lot 88 - Black BMW 320D 1995cc",
-      "date": "2026-09-05",
-      "price": null
+      "price": 2900
     },
     {
       "reg": "GMN566C",
-      "desc": "Lot 89 - Silver Toyota Anesis GS 1762cc",
+      "desc": "Lot 89 - Silver Toyota Avensis GS 1762cc",
       "date": "2026-09-05",
       "price": null
     },
@@ -405,37 +399,37 @@
       "reg": "PN12VVH",
       "desc": "Lot 91 - Red Peugeot 107 Active 1.0 (UK Registered)",
       "date": "2026-09-05",
-      "price": null
+      "price": 300
     },
     {
       "reg": "MMN356N",
       "desc": "Lot 92 - White Mercedes Sprinter 516CDI 2143cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 5700
     },
     {
       "reg": "JMN610Y",
       "desc": "Lot 93 - Silver Ford Fiesta Zetec 1242cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 350
     },
     {
       "reg": "PMN760H",
       "desc": "Lot 94 - Silver Land Rover Freelander TD4 2179cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 600
     },
     {
       "reg": "TMN144K",
       "desc": "Lot 95 - White Ford Fiesta Zetec S 1596cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 300
     },
     {
       "reg": "MMN726P",
       "desc": "Lot 96 - Black BMW 118i M Sport 1499cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 1900
     },
     {
       "reg": "PMN546U",
@@ -447,7 +441,7 @@
       "reg": "PMN271U",
       "desc": "Lot 98 - Silver Nissan Qashqai Acenta DIG-T 1197cc",
       "date": "2026-09-05",
-      "price": null
+      "price": 6700
     },
     {
       "reg": "PMN549U",
