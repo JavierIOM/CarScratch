@@ -14,6 +14,18 @@ const TOKEN_SCOPE = 'https://tapi.dvsa.gov.uk/.default';
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
 /**
+ * Outcome of an MOT lookup. Deliberately distinct from a bare `MOTHistory | null`:
+ * a confirmed 404 ('not_found', DVSA has no record for this reg) must never be
+ * confused with 'failed' (the check itself could not be completed, e.g. auth,
+ * rate limit, 5xx, network or token failure). Callers must not treat 'failed'
+ * as evidence the vehicle has no MOT history.
+ */
+export type MOTLookupResult =
+  | { status: 'found'; data: MOTHistory }
+  | { status: 'not_found' }
+  | { status: 'failed' };
+
+/**
  * Get an OAuth 2.0 access token from Microsoft Entra ID
  */
 async function getAccessToken(): Promise<string> {
@@ -51,18 +63,14 @@ async function getAccessToken(): Promise<string> {
 }
 
 /**
- * Fetch MOT history for a vehicle by registration number
+ * Fetch MOT history for a vehicle by registration number.
+ *
+ * The only caller (aggregator.ts) gates every call behind USE_MOT_API, which checks
+ * the same three credentials this function needs, so a missing-credentials case can't
+ * reach here. If that ever changes, getAccessToken() will fail with an empty
+ * client_id/secret and surface as 'failed', same as any other auth failure.
  */
-export async function getMOTHistory(registration: string): Promise<MOTHistory | null> {
-  if (!MOT_CLIENT_ID || !MOT_CLIENT_SECRET || !MOT_API_KEY) {
-    console.warn('MOT API credentials not configured. Have:', {
-      clientId: !!MOT_CLIENT_ID,
-      clientSecret: !!MOT_CLIENT_SECRET,
-      apiKey: !!MOT_API_KEY,
-    });
-    return null;
-  }
-
+export async function getMOTHistory(registration: string): Promise<MOTLookupResult> {
   const clean = registration.toUpperCase().replace(/\s/g, '');
 
   try {
@@ -77,21 +85,21 @@ export async function getMOTHistory(registration: string): Promise<MOTHistory | 
     });
 
     if (res.status === 404) {
-      return null;
+      return { status: 'not_found' };
     }
 
     if (!res.ok) {
       const text = await res.text();
       console.error(`[MOT] API error (${res.status}): ${text}`);
-      return null;
+      return { status: 'failed' };
     }
 
     const data = await res.json() as MOTApiResponse;
 
-    return transformResponse(data, clean);
+    return { status: 'found', data: transformResponse(data, clean) };
   } catch (err) {
     console.error('[MOT] Request failed:', err);
-    return null;
+    return { status: 'failed' };
   }
 }
 

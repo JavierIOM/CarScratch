@@ -1,10 +1,10 @@
-import type { VehicleInfo, VehicleData, ScrapedExtras } from './types';
+import type { VehicleInfo, VehicleData, ScrapedExtras, MOTHistory } from './types';
 import { getMockVehicleData, getMockMOTHistory } from './mock-data';
 import { scrapeTotalCarCheck } from './scraper';
 import { isManxPlate } from './iom-detector';
 import { scrapeIOMVehicle, iomToVehicleData } from './iom-scraper';
 import { getDVLAVehicle } from './dvla';
-import { getMOTHistory } from './mot';
+import { getMOTHistory, type MOTLookupResult } from './mot';
 import { checkChrystalsAuction } from './chrystals';
 import { calculateIOMDuty } from './iom-vehicle-duty';
 
@@ -206,6 +206,7 @@ async function getIOMVehicleInfo(
 
     // If there's a valid previous UK registration, also fetch UK data for MOT history
     let motHistory = undefined;
+    let motHistoryUnavailable = false;
     let ukExtras: ScrapedExtras | undefined;
     let ukVehicle: VehicleData | undefined;
 
@@ -215,6 +216,7 @@ async function getIOMVehicleInfo(
         validPreviousUKReg.replace(/\s/g, '')
       );
       motHistory = ukInfo.motHistory;
+      motHistoryUnavailable = !!ukInfo.motHistoryUnavailable;
       ukVehicle = ukInfo.vehicle;
 
       // Merge any UK extras (but keep IoM as primary source)
@@ -248,6 +250,7 @@ async function getIOMVehicleInfo(
       registration: normalized,
       vehicle,
       motHistory,
+      motHistoryUnavailable: motHistoryUnavailable || undefined,
       extras: mergedExtras,
       ukVehicle,
       isManx: true,
@@ -292,7 +295,24 @@ async function getUKVehicleInfo(normalized: string): Promise<VehicleInfo> {
     const results = await Promise.all(promises);
 
     let vehicle = results[0] as VehicleData | null;
-    const motHistory = results[1] as Awaited<ReturnType<typeof getMockMOTHistory>>;
+
+    // MOT result shape differs by branch: the real API returns a status/data
+    // discriminated union so a failed check can't be mistaken for a confirmed
+    // absence; the mock never fails, so it stays a plain MOTHistory | null.
+    let motHistory: MOTHistory | undefined;
+    let motHistoryUnavailable = false;
+    if (USE_MOT_API) {
+      const motResult = results[1] as MOTLookupResult;
+      if (motResult.status === 'found') {
+        motHistory = motResult.data;
+      } else if (motResult.status === 'failed') {
+        motHistoryUnavailable = true;
+      }
+      // 'not_found' leaves motHistory undefined, this is a confirmed absence, not a failure
+    } else {
+      motHistory = (results[1] as MOTHistory | null) ?? undefined;
+    }
+
     const scrapedData = ENABLE_SCRAPING
       ? (results[2] as Awaited<ReturnType<typeof scrapeTotalCarCheck>>)
       : null;
@@ -332,6 +352,18 @@ async function getUKVehicleInfo(normalized: string): Promise<VehicleInfo> {
     const hasAnyData = vehicle || motHistory || scrapedData;
 
     if (!hasAnyData) {
+      // A failed MOT check with nothing else found is a different situation to a
+      // genuinely unrecognised registration, and must not be reported as one.
+      if (motHistoryUnavailable) {
+        return {
+          registration: normalized,
+          errorKind: 'lookup_failed',
+          error:
+            'We could not complete this lookup right now. The MOT records service did not ' +
+            'respond, so this is not a confirmation that the registration is invalid. ' +
+            'Please try again shortly.',
+        };
+      }
       return {
         registration: normalized,
         error: 'Vehicle not found. Please check the registration number and try again.',
@@ -341,7 +373,8 @@ async function getUKVehicleInfo(normalized: string): Promise<VehicleInfo> {
     return {
       registration: normalized,
       vehicle: vehicle || undefined,
-      motHistory: motHistory || undefined,
+      motHistory,
+      motHistoryUnavailable: motHistoryUnavailable || undefined,
       extras,
     };
   } catch (err) {

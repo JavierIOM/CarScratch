@@ -151,7 +151,9 @@ const vehicleSchema = vehicle ? {
             <path d="M12 16h.01" />
           </svg>
         </div>
-        <h2 class="text-xl font-semibold mb-2">Vehicle Not Found</h2>
+        <h2 class="text-xl font-semibold mb-2">
+          {vehicleInfo.errorKind === 'lookup_failed' ? 'Lookup Incomplete' : 'Vehicle Not Found'}
+        </h2>
         <p class="text-slate-400 mb-6">{vehicleInfo.error}</p>
         <a
           href="/"
@@ -234,6 +236,16 @@ const vehicleSchema = vehicle ? {
 
         {vehicleInfo.motHistory && vehicleInfo.motHistory.motTests.length > 0 && (
           <MOTHistory history={vehicleInfo.motHistory} />
+        )}
+
+        {vehicleInfo.motHistoryUnavailable && (
+          <div class="bg-amber-500/10 border border-amber-500/30 p-4 text-sm">
+            <p class="font-medium text-amber-300 mb-1">MOT history could not be checked</p>
+            <p class="text-amber-200/70">
+              The DVSA MOT service did not respond. This is not a record of the vehicle's MOT
+              history, the check simply could not be completed. Please try again shortly.
+            </p>
+          </div>
         )}
 
         {!vehicleInfo.vehicle && vehicleInfo.motHistory && (

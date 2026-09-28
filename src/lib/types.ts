@@ -107,9 +107,18 @@ export interface VehicleInfo {
   registration: string;
   vehicle?: VehicleData;
   motHistory?: MOTHistory;
+  // True only when the MOT check itself could not be completed (API/auth/network
+  // failure). Never set for a confirmed "no MOT record" result, that case is
+  // already represented correctly by motHistory being absent. Callers must not
+  // treat this as evidence the vehicle has no MOT history.
+  motHistoryUnavailable?: boolean;
   extras?: ScrapedExtras;
   auction?: AuctionResult;
   ukVehicle?: VehicleData;
   isManx?: boolean;
   error?: string;
+  // Distinguishes "this registration has no record" from "a lookup could not be
+  // completed". Absent defaults to 'not_found' for backward compatibility with
+  // existing error messages.
+  errorKind?: 'not_found' | 'lookup_failed';
 }

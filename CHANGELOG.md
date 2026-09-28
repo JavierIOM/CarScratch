@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.6.14] - 2026-09-28
+
+### Fixed
+- MOT lookup no longer collapses "the check could not be completed" and "DVSA confirms no record" into the same silent null. `getMOTHistory` now returns a found/not_found/failed result so the two are distinguishable in code
+- A failed MOT check with no other vehicle data found no longer reports "Vehicle not found", which implied the registration was invalid when the real cause was an unreachable MOT service. It now reports a distinct message and error kind
+- When other vehicle data is found but the MOT check itself failed, the page now shows an explicit "MOT history could not be checked" notice instead of silently omitting the section, worded so it cannot be read as "this vehicle has no MOT history"
+- Removed a dead credential-check branch in `getMOTHistory`, unreachable since its only caller already gates on the same three variables
+
+### Added
+- Vitest as a dev dependency with a `test` script, and a first test suite covering the MOT result states and the aggregator's handling of a failed vs. absent MOT lookup. No CI wired up yet
+
 ## [2.6.13] - 2026-09-07
 
 ### Added
