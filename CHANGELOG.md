@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.6.16] - 2026-10-03
+
+### Added
+- Oct 3 2026 auction results: 46 sold, 14 no sale (£85,270 total)
+
+### Fixed
+- Oct 3 2026 lot rows now use the same reg/desc/date/price key order as every other lot
+
 ## [2.6.15] - 2026-10-02
 
 ### Added
